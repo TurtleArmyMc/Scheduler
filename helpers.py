@@ -32,3 +32,15 @@ def format_date(year=None, month=None, day=None, date=None):
 def days_in_month(year, month):
     # Returns how many days there are in a given month.
     return monthrange(int(year), int(month))[1]
+
+
+def get_current_year():
+    return datetime_date.today().year
+
+
+def get_current_month():
+    return datetime_date.today().month
+
+
+def get_current_day():
+    return datetime_date.today().day

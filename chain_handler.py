@@ -50,7 +50,7 @@ class Chain_Handler():
         self.chains[chain_name][year][month][day-1] = new_value
         self.save_json()
 
-    def check_chain(self, chain, year=None, month=None, day=None, date=None):
+    def get_chain(self, chain, year=None, month=None, day=None, date=None):
         # Try to check the value of the chain at the date. If it's missing, return 0.
         year, month, day = format_date(year, month, day, date)
 
@@ -59,7 +59,7 @@ class Chain_Handler():
         except (KeyError, IndexError):
             return 0
 
-    def check_chain_month(self, chain_name, year, month):
+    def get_chain_month(self, chain_name, year, month):
         # Return a list of all the chain links for a month. If it's not present in the json, return an empty list.
         year = str(year)
         month = str(month)

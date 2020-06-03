@@ -1,8 +1,8 @@
-from PySide2.QtWidgets import QLabel, QWidget, QCheckBox, QHBoxLayout, QVBoxLayout
+from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QCheckBox, QScrollArea, QGridLayout, QVBoxLayout
 from PySide2.QtCore import Qt
 
 from chain_handler import Chain_Handler
-from helpers import format_date, days_in_month
+from helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day
 
 
 chain_handler = Chain_Handler()
@@ -10,56 +10,68 @@ chain_handler = Chain_Handler()
 class Ui_ChainHandlerWidget(QWidget):
     def __init__(self):
         super(Ui_ChainHandlerWidget, self).__init__()
-        self.layout = QHBoxLayout()
-        self.setLayout(self.layout)
         
-        self.date_labels = QVBoxLayout()
-        self.layout.addLayout(self.date_labels)
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        self.chain_layout = QGridLayout()
+        layout.addLayout(self.chain_layout)
+
+        self.load_previous_month_button = QPushButton("Load previous month's chains.")
+        self.load_previous_month_button.clicked.connect(self.load_chain_links_previous_month)
+        layout.addWidget(self.load_previous_month_button)
+
+        # Prevent vertical stretching of layout in scroll area.
+        layout.addStretch()
         
-        self.chains = []
-        self.create_all_chains()
-        self.load_chain_links_month("2020", "6")
+        self.create_chain_labels()
 
-    def create_new_chain(self, chain_name):
-        new_chain = Ui_ChainWidget(chain_name)
-        self.chains.append(new_chain)
-        self.layout.addWidget(new_chain)
+        self.load_month = get_current_month()
+        self.load_year = get_current_year()
+        self.load_chain_links_previous_month()
+        self.load_chain_links_previous_month()
 
-    def create_all_chains(self):
-        for chain_name in chain_handler.chain_order:
-            self.create_new_chain(chain_name)
+    def create_chain_labels(self):
+        # Creates labels for each chain in the chain_layout.
+        row = 0
+        for index, chain_name in enumerate(chain_handler.chain_order):
+            column = index + 1
+            label = QLabel()
+            label.setText(chain_name)
+            self.chain_layout.addWidget(label, row, column)
 
-    def load_chain_links_month(self, year, month):
+        # Prevents horizontal stretching of layout in scroll_area.
+        self.chain_layout.setColumnStretch(self.chain_layout.columnCount(), 1)
+        
+    def load_chains_month(self, year, month):
         # Loads all the chains for a month.
         # Add labels.
-        for day in range(days_in_month(year, month), 0, -1):
+
+        if not (month == get_current_month() and year == get_current_year()):
+            start_day = days_in_month(year, month)
+        else:
+            start_day = get_current_day()
+        
+        row = self.chain_layout.rowCount()
+        for day in range(start_day, 0, -1):
             date_label = QLabel()
             date_label.setText(f"{year}-{month}-{day}")
-            self.date_labels.addWidget(date_label)
+            self.chain_layout.addWidget(date_label, row, 0)
 
-        for chain in self.chains:
-            chain.load_chain_links_month(year, month)
+            for index, chain_name in enumerate(chain_handler.chain_order):
+                column = index + 1 
+                chain_link = Ui_ChainWidgetCheckbox(chain_name, year, month, day)
+                self.chain_layout.addWidget(chain_link, row, column)
+            row += 1
 
-
-class Ui_ChainWidget(QWidget):
-    def __init__(self, chain_name):
-        super(Ui_ChainWidget, self).__init__()
-        self.chain_name = chain_name
-        self.layout = QVBoxLayout()
-        label = QLabel()
-        label.setText(chain_name)
-        self.layout.addWidget(label)
-        self.setLayout(self.layout)
-
-    def load_chain_links_month(self, year, month):
-        chain_links = chain_handler.check_chain_month(self.chain_name, year, month)
+    def load_chain_links_previous_month(self):
+        self.load_chains_month(self.load_year, self.load_month)
         
-        chain_links.reverse() # Reverse to append the end of the month to the layout first.
-        day = len(chain_links)
-        for link in chain_links:
-            chain_link = Ui_ChainWidgetCheckbox(self.chain_name, year, month, day, state=link)
-            self.layout.addWidget(chain_link)
-            day -= 1 
+        if (self.load_month != 1):
+            self.load_month -= 1
+        else:
+            self.load_month = 12 
+            self.load_year -= 1
 
 
 class Ui_ChainWidgetCheckbox(QCheckBox):
@@ -67,11 +79,13 @@ class Ui_ChainWidgetCheckbox(QCheckBox):
         self.chain_name = chain_name
         self.year, self.month, self.day = format_date(year, month, day, date)
         
-        checkbox_label = f"{self.year}-{self.month}-{self.day}"
-        super(Ui_ChainWidgetCheckbox, self).__init__(checkbox_label)
+        # checkbox_label = f"{self.year}-{self.month}-{self.day}"
+        # super(Ui_ChainWidgetCheckbox, self).__init__(checkbox_label)
+        super(Ui_ChainWidgetCheckbox, self).__init__()
+
 
         if state is None:
-            state = chain_handler.check_chain(chain_name, year, month, day, date)
+            state = chain_handler.get_chain(chain_name, year, month, day, date)
             
         if state == 1:
             self.setCheckState(Qt.CheckState.Checked)

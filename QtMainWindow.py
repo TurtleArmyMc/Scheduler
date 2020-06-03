@@ -9,4 +9,5 @@ class MainWindow(QMainWindow):
         self.chain_handler_widget = Ui_ChainHandlerWidget()
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(self.chain_handler_widget)
+        self.scroll_area.setWidgetResizable(True) # Allows widget to expand instead of getting squished.
         self.setCentralWidget(self.scroll_area)
