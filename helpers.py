@@ -44,3 +44,11 @@ def get_current_month():
 
 def get_current_day():
     return datetime_date.today().day
+
+
+# Returns an abreviated weekday from date (Sun, Mon, Tue, etc.)
+def get_weekday(year=None, month=None, day=None, date=None):
+    year, month, day = format_date(year, month, day, date)
+    year, month = int(year), int(month)
+
+    return datetime_date(year, month, day).strftime("%a")

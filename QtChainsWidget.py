@@ -1,35 +1,40 @@
-from PySide2.QtWidgets import (QWidget, QLabel, QMenu, QAction, QPushButton, QCheckBox, QScrollArea, QGridLayout,
-    QVBoxLayout, QInputDialog)
+from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
 from chain_handler import Chain_Handler
-from helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day
+
+from Qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue
+from helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day, get_weekday
 
 
 chain_handler = Chain_Handler()
 
-class Ui_ChainHandlerWidget(QWidget):
-    def __init__(self, parent=None):
-        super(Ui_ChainHandlerWidget, self).__init__(parent=parent)
-        self.load_widget_ui()
+# Widget to load and display all chains.
+class Q_Chain_Handler_Widget(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(Q_Chain_Handler_Widget, self).__init__(*args, **kwargs)
+        self.init_widget_ui()
 
-    # Creates widget layouts and loads first two months of chain links.
-    def load_widget_ui(self):  
-        layout = QVBoxLayout()
+    def init_widget_ui(self):
+        layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 
-        # Create layout for holding chain links and labels. 
-        self.chain_layout = QGridLayout()
+        self.chain_layout = QtWidgets.QGridLayout()
         layout.addLayout(self.chain_layout)
 
         # Create button for loading more chain links.
-        load_previous_month_button = QPushButton("Load previous month's chains.")
+        load_previous_month_button = QtWidgets.QPushButton("Load previous month's chains.")
         load_previous_month_button.clicked.connect(self.load_chain_links_previous_month)
         layout.addWidget(load_previous_month_button)
 
         # Prevents vertical stretching of layout in scroll area.
         layout.addStretch()
-        
+
+        self.load_chain_layout_ui()
+    
+    # Creates widget labels loads first two months of chain links.
+    def load_chain_layout_ui(self):  
+        self.clear_chain_layout_ui()
         self.create_chain_labels()
 
         # Load chains links for current month and previous month. 
@@ -38,20 +43,38 @@ class Ui_ChainHandlerWidget(QWidget):
         self.load_chain_links_previous_month()
         self.load_chain_links_previous_month()
 
+    def clear_chain_layout_ui(self):
+        for column in range(self.chain_layout.columnCount()):
+            self.chain_layout.setColumnStretch(column, 0)
+            for row in range(self.chain_layout.rowCount()):
+                item = self.chain_layout.itemAtPosition(row, column)
+                if item is not None:
+                    item.widget().deleteLater()
+
     # Creates labels for each chain in the chain_layout.
     def create_chain_labels(self):
+        label_style_sheet = "font-weight: bold; font-size: 50px; margin-right: 5px"
         row = 0
-        for index, chain_name in enumerate(chain_handler.chain_order):
+        for index, chain_name in enumerate(chain_handler.get_chain_order()):
             column = index + 1
-            label = QLabel(parent=self)
+            label = QtWidgets.QLabel(parent=self)
             label.setText(chain_name)
+            label.setStyleSheet(label_style_sheet)
             self.chain_layout.addWidget(label, row, column)
+
+        # Add button to reorder chains and create new chains. 
+        edit_chains_button = QtWidgets.QPushButton(parent=self)
+        edit_chains_button.setText("Edit chains.")
+        edit_chains_button.clicked.connect(self.edit_chain_order)
+        self.chain_layout.addWidget(edit_chains_button, row, self.chain_layout.columnCount(), alignment=Qt.AlignLeft)
 
         # Prevents horizontal stretching of layout in scroll_area.
         self.chain_layout.setColumnStretch(self.chain_layout.columnCount(), 1)
         
     # Loads all the chains links for a month.
     def load_chains_month(self, year, month):
+        date_label_style_sheet = "font-size: 25px"
+
         if not (month == get_current_month() and year == get_current_year()):
             start_day = days_in_month(year, month)
         else:
@@ -60,13 +83,17 @@ class Ui_ChainHandlerWidget(QWidget):
         row = self.chain_layout.rowCount()
         date_label_column = 0
         for day in range(start_day, 0, -1):
-            date_label = QLabel(parent=self)
-            date_label.setText(f"{year}-{month}-{day}")
+            weekday = get_weekday(year, month, day)
+            
+            date_label = QtWidgets.QLabel(parent=self)
+            date_label.setStyleSheet(date_label_style_sheet)
+            date_label.setText(f"{weekday} {month}/{day}/{str(year)[2:]}")
+            
             self.chain_layout.addWidget(date_label, row, date_label_column)
 
-            for index, chain_name in enumerate(chain_handler.chain_order):
+            for index, chain_name in enumerate(chain_handler.get_chain_order()):
                 column = index + 1 
-                chain_link = Ui_ChainWidgetCheckbox(chain_name, year, month, day, parent=self)
+                chain_link = Q_Chain_Link_Checkbox(self, chain_name, year, month, day)
                 self.chain_layout.addWidget(chain_link, row, column)
             row += 1
 
@@ -80,11 +107,27 @@ class Ui_ChainHandlerWidget(QWidget):
             self.load_month = 12 
             self.load_year -= 1
 
+    def edit_chain_order(self):
+        old_chain_order = chain_handler.get_chain_order()
+        new_chain_order, ok = Q_Reorder_Dialogue(old_chain_order, "Edit chains", "Add chain", parent=self)
+        if ok:
+            for chain_name in new_chain_order:
+                if chain_name not in old_chain_order:
+                    chain_handler.create_new_chain(chain_name)
+            chain_handler.edit_chain_order(new_chain_order)
+            self.load_chain_layout_ui()
+
 
 # Widget used to represent the chain links for each day in a chain.
-class Ui_ChainWidgetCheckbox(QCheckBox):
-    def __init__(self, chain_name, year=None, month=None, day=None, date=None, state=None, parent=None):
-        super(Ui_ChainWidgetCheckbox, self).__init__(parent=parent)
+class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
+    def __init__(self, parent, chain_name, year=None, month=None, day=None, date=None, state=None, *args, **kwargs):
+        super(Q_Chain_Link_Checkbox, self).__init__(parent=parent, *args, **kwargs)
+
+        self.parent = parent
+
+        chain_link_checkbox_stylesheet = """QCheckBox { margin-left: 50px; font-size:80px } 
+            QCheckBox::indicator { width: 80px; height: 80px }"""
+        self.setStyleSheet(chain_link_checkbox_stylesheet)
         
         self.chain_name = chain_name
         self.year, self.month, self.day = format_date(year, month, day, date)
@@ -124,7 +167,7 @@ class Ui_ChainWidgetCheckbox(QCheckBox):
 
     # Load the context menu for editing the chain link's comment tooltip.
     def init_context_menu(self):
-        self.context_menu = QMenu(self)
+        self.context_menu = QtWidgets.QMenu(self)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.on_context_menu)
         self.load_context_menu()
@@ -134,21 +177,33 @@ class Ui_ChainWidgetCheckbox(QCheckBox):
         self.context_menu.clear()
 
         if self.comment is None:
-            create_comment_action = QAction("Create new comment.", parent=self)
+            create_comment_action = QtWidgets.QAction("Create new comment.", parent=self)
             create_comment_action.triggered.connect(self.edit_comment)
             self.context_menu.addAction(create_comment_action)
         else:
-            edit_comment_action = QAction("Edit comment.", parent=self)
+            edit_comment_action = QtWidgets.QAction("Edit comment.", parent=self)
             edit_comment_action.triggered.connect(self.edit_comment)
             self.context_menu.addAction(edit_comment_action)
             
-            delete_comment_action = QAction("Delete comment.", parent=self)
+            delete_comment_action = QtWidgets.QAction("Delete comment.", parent=self)
             delete_comment_action.triggered.connect(self.delete_comment)
             self.context_menu.addAction(delete_comment_action)
+        delete_chain_action = QtWidgets.QAction("Delete chain.", parent=self)
+        delete_chain_action.triggered.connect(self.delete_chain)
+        self.context_menu.addAction(delete_chain_action)
 
+
+    def delete_chain(self):
+        text = f"Delete chain '{self.chain_name}'?"
+        informative_text = "WARNING: This can not be undone."
+        ok = Q_Confirmation_Dialog(text, informative_text, warning=True)
+        if ok:
+            chain_handler.delete_chain(self.chain_name)
+            self.parent.load_chain_layout_ui()
+    
     # Edit comment on chain link and update chain_comments json.
     def edit_comment(self):
-        comment, ok = QInputDialog(self).getText(self, "Comment", "Set comment:")
+        comment, ok = QtWidgets.QInputDialog(self).getText(self, "Comment", "Set comment:")
         if comment and ok:
             chain_handler.edit_chain_comment(self.chain_name, comment, self.year, self.month, self.day)
             self.load_comment(comment)
