@@ -3,11 +3,12 @@ from PySide2.QtCore import Qt
 
 
 # Dialog to confirm or cancel action.
-def Q_Confirmation_Dialog(text, informative_text="", warning=False, parent=None, *args, **kwargs):
+def Q_Confirmation_Dialog(window_title, text, informative_text="", warning=False, parent=None, *args, **kwargs):
     dialog = QtWidgets.QMessageBox(parent=parent, *args, **kwargs)
     if warning:
         dialog.setIcon(QtWidgets.QMessageBox.Warning)
     
+    dialog.setWindowTitle(window_title)
     dialog.setText(text)
     if informative_text:
         dialog.setInformativeText(informative_text)

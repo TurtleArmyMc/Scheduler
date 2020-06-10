@@ -1,13 +1,11 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
-from chain_handler import Chain_Handler
+from core.chain_handler import chain_handler
 
-from Qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue
-from helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day, get_weekday
+from ui.qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue
+from core.helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day, get_weekday
 
-
-chain_handler = Chain_Handler()
 
 # Widget to load and display all chains.
 class Q_Chain_Handler_Widget(QtWidgets.QWidget):
@@ -165,14 +163,14 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
 
         self.setText(self.checkbox_label)
 
-    # Load the context menu for editing the chain link's comment tooltip.
+    # Load the context menu for editing the chain link's comment tooltip and deleting the chain.
     def init_context_menu(self):
         self.context_menu = QtWidgets.QMenu(self)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.on_context_menu)
         self.load_context_menu()
 
-    # Load items in the context menu for editing the chain link's comment tooltip.
+    # Load items in the context menu for editing the chain link's comment tooltip and deleting the chain.
     def load_context_menu(self):
         self.context_menu.clear()
 
@@ -196,12 +194,11 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     def delete_chain(self):
         text = f"Delete chain '{self.chain_name}'?"
         informative_text = "WARNING: This can not be undone."
-        ok = Q_Confirmation_Dialog(text, informative_text, warning=True)
+        ok = Q_Confirmation_Dialog("Confirm deletion", text, informative_text, warning=True)
         if ok:
             chain_handler.delete_chain(self.chain_name)
             self.parent.load_chain_layout_ui()
     
-    # Edit comment on chain link and update chain_comments json.
     def edit_comment(self):
         comment, ok = QtWidgets.QInputDialog(self).getText(self, "Comment", "Set comment:")
         if comment and ok:
@@ -209,7 +206,6 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
             self.load_comment(comment)
             self.load_context_menu()
 
-    # Remove comment from chain link and update chain_comments json.
     def delete_comment(self):
         chain_handler.delete_chain_comment(self.chain_name, self.year, self.month, self.day)
         self.load_comment()

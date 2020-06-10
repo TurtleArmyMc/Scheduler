@@ -1,14 +1,13 @@
 from json import loads as json_loads, dumps as json_dumps
 from pathlib import Path
 
-from helpers import format_date, days_in_month
+from core.helpers import format_date, days_in_month
 
 
 # Handles loading, saving, and getting chains.
 class Chain_Handler():
-    _chains_json_path = Path("chains.json")
-
-    def __init__(self):
+    def __init__(self, chains_json_path="data/chains.json"):
+        self._chains_json_path = Path(chains_json_path)
         self._load_json()
 
     def _get_chains_dict(self):
@@ -142,3 +141,6 @@ class Chain_Handler():
             return self._chain_comments[chain_name][year][month][day]
         except KeyError:
             return None
+
+
+chain_handler = Chain_Handler()
