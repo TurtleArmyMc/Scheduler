@@ -1,8 +1,11 @@
+import logging
 from json import loads as json_loads, dumps as json_dumps
 from pathlib import Path
 
 from core.helpers import format_date, days_in_month
 
+
+logging.getLogger().setLevel(logging.WARNING)
 
 # Handles loading, saving, and getting chains.
 class Chain_Handler():
@@ -24,6 +27,7 @@ class Chain_Handler():
                 self._chains = chains_dict["chains"]
                 self._chain_order = chains_dict["chain_order"]
                 self._chain_comments = chains_dict["chain_comments"]
+                logging.info(f"Loaded chains data from '{self._chains_json_path}'.")
         else:
             self._chains = {}
             self._chain_order = []
@@ -36,12 +40,14 @@ class Chain_Handler():
             serialized_json = json_dumps(chains_dict, indent=1)
             with open(self._chains_json_path, 'w') as file:
                 file.write(serialized_json)
+                logging.info(f"Saved chains data to '{self._chains_json_path}'.")
         except:
             raise
 
     def create_new_chain(self, chain_name):
         self._chains[chain_name] = {}
         self._chain_order.append(chain_name)
+        logging.info(f"Created new chain '{chain_name}'.")
         self._save_json()
     
     def get_chain_order(self):
@@ -51,6 +57,7 @@ class Chain_Handler():
         # Check to see that the new order contains the same chains.
         if new_order.copy().sort() == self.get_chain_order().sort():
             self._chain_order = new_order.copy()
+            logging.info(f"Reordered chains.")
             self._save_json()
         else:
             raise SyntaxError("New chain order must contain the same names as the old order.")
@@ -66,7 +73,10 @@ class Chain_Handler():
             days = days_in_month(year, month)
             self._chains[chain_name][year][month] = [0] * days
         
-        self._chains[chain_name][year][month][day-1] = new_value
+        day_index = day - 1
+        old_value = self._chains[chain_name][year][month][day_index]
+        logging.info(f"Changed chain '{chain_name}' at {year}/{month}/{day} from '{old_value}' to '{new_value}'.")
+        self._chains[chain_name][year][month][day_index] = new_value
         self._save_json()
 
     # Try to check the value of the chain at the date. If it's missing, return 0.
@@ -94,6 +104,7 @@ class Chain_Handler():
             self._chain_order.remove(chain_name)
             self._chains.pop(chain_name)
             self._chain_comments.pop(chain_name, None)
+            logging.info(f"Deleted chain '{chain_name}'.")
             self._save_json()
         else:
             raise NameError(f"No chain '{chain_name}'")
@@ -114,7 +125,10 @@ class Chain_Handler():
                 self._chain_comments[chain_name][year] = {}
             if (month not in self._chain_comments[chain_name][year]):
                 self._chain_comments[chain_name][year][month] = {}
+            old_comment = self.get_chain_comment(chain_name, year, month, day)
             self._chain_comments[chain_name][year][month][day] = new_comment
+            logging.info(
+                f"Changed chain '{chain_name}' comment at {year}/{month}/{day} from '{old_comment}' to '{new_comment}'.")
             self._save_json()
     
     # Delete the comment for a chain at a date. 
@@ -125,10 +139,12 @@ class Chain_Handler():
         day = str(day)
 
         try:
+            old_comment = self.get_chain_comment(chain_name, year, month, day)
             del self._chain_comments[chain_name][year][month][day]
+            logging.info(f"Deleted chain '{chain_name}' comment '{old_comment}' at {year}/{month}/{day}.")
             self._save_json()
         except KeyError:
-            pass
+            logging.info(f"Tried to delete chain '{chain_name}' comment at {year}/{month}/{day} but there was no comment.")
 
     # Return the comment for a chain at a date. If it's not present in the json, return None.
     def get_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
