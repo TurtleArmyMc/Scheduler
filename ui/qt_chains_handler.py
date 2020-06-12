@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt
 from core.chain_handler import chain_handler
 
 from ui.qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue
-from core.helpers import format_date, days_in_month, get_current_month, get_current_year, get_current_day, get_weekday
+import core.helpers as h
 
 
 # Widget to load and display all chains.
@@ -36,8 +36,8 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         self.create_chain_labels()
 
         # Load chains links for current month and previous month. 
-        self.load_month = get_current_month()
-        self.load_year = get_current_year()
+        self.load_month = h.get_current_month()
+        self.load_year = h.get_current_year()
         self.load_chain_links_previous_month()
         self.load_chain_links_previous_month()
 
@@ -73,15 +73,15 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
     def load_chains_month(self, year, month):
         date_label_style_sheet = "font-size: 25px"
 
-        if not (month == get_current_month() and year == get_current_year()):
-            start_day = days_in_month(year, month)
+        if not (month == h.get_current_month() and year == h.get_current_year()):
+            start_day = h.days_in_month(year, month)
         else:
-            start_day = get_current_day()
+            start_day = h.get_current_day()
         
         row = self.chain_layout.rowCount()
         date_label_column = 0
         for day in range(start_day, 0, -1):
-            weekday = get_weekday(year, month, day)
+            weekday = h.get_weekday(year, month, day)
             
             date_label = QtWidgets.QLabel(parent=self)
             date_label.setStyleSheet(date_label_style_sheet)
@@ -128,7 +128,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
         self.setStyleSheet(chain_link_checkbox_stylesheet)
         
         self.chain_name = chain_name
-        self.year, self.month, self.day = format_date(year, month, day, date)
+        self.year, self.month, self.day = h.format_date_iii(year, month, day, date)
         
         self.init_checked_state(state)
         self.load_comment()

@@ -2,7 +2,7 @@ import logging
 from json import loads as json_loads, dumps as json_dumps
 from pathlib import Path
 
-from core.helpers import format_date, days_in_month
+import core.helpers as h
 
 
 logging.getLogger().setLevel(logging.WARNING)
@@ -64,13 +64,13 @@ class Chain_Handler():
     
     # Edits a chain at a given date. chain_name should be a string, new value should be 0 or 1 for incomplete or complete.
     def edit_chain(self, chain_name, new_value: int, year=None, month=None, day=None, date=None):
-        year, month, day = format_date(year, month, day, date)
+        year, month, day = h.format_date_ssi(year, month, day, date)
         
         # If missing dictionary keys for year and/or month, add them.
         if (year not in self._chains[chain_name]):
             self._chains[chain_name][year] = {}
         if (month not in self._chains[chain_name][year]):
-            days = days_in_month(year, month)
+            days = h.days_in_month(year, month)
             self._chains[chain_name][year][month] = [0] * days
         
         day_index = day - 1
@@ -81,7 +81,7 @@ class Chain_Handler():
 
     # Try to check the value of the chain at the date. If it's missing, return 0.
     def get_chain(self, chain, year=None, month=None, day=None, date=None):
-        year, month, day = format_date(year, month, day, date)
+        year, month, day = h.format_date_ssi(year, month, day, date)
 
         try:
             return self._chains[chain][year][month][day-1]
@@ -96,7 +96,7 @@ class Chain_Handler():
         try:
             return self._chains[chain_name][year][month].copy()
         except KeyError:
-            days = days_in_month(year, month)
+            days = h.days_in_month(year, month)
             return [0] * days
 
     def delete_chain(self, chain_name):
@@ -114,8 +114,8 @@ class Chain_Handler():
         if new_comment == "" or new_comment.isspace():
             self.delete_chain_comment(self, chain_name, year, month, day, date)
         else:
-            year, month, day = format_date(year, month, day, date)
-            # Unlike chains, chains_comments uses strings for days because [chain_name][year][month] contains a 
+            year, month, day = h.format_date_ssi(year, month, day, date)
+            # Unlike _chains, _chains_comments uses strings for days because [chain_name][year][month] contains a 
             # dictionary instead of a list.
             day = str(day)
             
@@ -133,10 +133,9 @@ class Chain_Handler():
     
     # Delete the comment for a chain at a date. 
     def delete_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
-        year, month, day = format_date(year, month, day, date)
-        # Unlike chains, chains_comments uses strings for days because [chain_name][year][month] contains a dictionary
+        year, month, day = h.format_date_sss(year, month, day, date)
+        # Unlike _chains, _chains_comments uses strings for days because [chain_name][year][month] contains a dictionary
         # instead of a list.
-        day = str(day)
 
         try:
             old_comment = self.get_chain_comment(chain_name, year, month, day)
@@ -148,10 +147,9 @@ class Chain_Handler():
 
     # Return the comment for a chain at a date. If it's not present in the json, return None.
     def get_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
-        year, month, day = format_date(year, month, day, date)
-        # Unlike chains,chains_comments uses strings for days because [chain_name][year][month] contains a dictionary 
+        year, month, day = h.format_date_sss(year, month, day, date)
+        # Unlike _chains, _chains_comments uses strings for days because [chain_name][year][month] contains a dictionary 
         # instead of a list.
-        day = str(day)
 
         try:
             return self._chain_comments[chain_name][year][month][day]

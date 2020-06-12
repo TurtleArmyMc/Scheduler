@@ -66,8 +66,8 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
 
 
 class App(QtWidgets.QApplication):
-    def run(self, system_tray=True):
-        if system_tray:
+    def run(self, use_system_tray=False):
+        if use_system_tray:
             self.setQuitOnLastWindowClosed(False)
             
             w = QtWidgets.QWidget()
