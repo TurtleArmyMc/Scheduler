@@ -27,6 +27,11 @@ class Chain_Handler():
             self._chains = {}
             self._chain_order = []
             self._chain_comments = {}
+            self._chains_dict = {
+                "chain_order": self._chain_order,
+                "chains": self._chains,
+                "chain_comments": self._chain_comments
+            }
             self._save_json()
 
     def _save_json(self):

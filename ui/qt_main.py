@@ -33,7 +33,7 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         self.open_main_window()
 
     def init_icon(self):
-        self.setIcon(QIcon("resources/clock.ico"))
+        self.setIcon(QIcon("resources/Clock.ico"))
     
     def init_context_menu(self):
         self.context_menu = QtWidgets.QMenu(parent=self.parent) # Requires parent to not be destroyed right away.
