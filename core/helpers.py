@@ -55,6 +55,6 @@ def get_current_day() -> int:
 
 
 # Returns an abreviated weekday from date (Sun, Mon, Tue, etc.)
-def get_weekday(year=None, month=None, day=None, date=None):
+def get_weekday(year=None, month=None, day=None, date=None) -> str:
     year, month, day = format_date_iii(year, month, day, date)
     return datetime.date(year, month, day).strftime("%a")

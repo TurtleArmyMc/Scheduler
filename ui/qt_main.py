@@ -29,7 +29,7 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         self.init_context_menu()
         self.activated.connect(self.on_activated)
 
-        self.main_window = None
+        self.main_window = Main_Window(parent=self)
         self.open_main_window()
 
     def init_icon(self):
@@ -47,13 +47,8 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         self.context_menu.addAction(quit_app_action)
 
         self.setContextMenu(self.context_menu)
-
-    def load_main_window(self):
-        self.main_window = Main_Window(parent=self)
     
     def open_main_window(self):
-        if self.main_window is None:
-            self.load_main_window()
         self.main_window.showMaximized()
         self.main_window.activateWindow()
 

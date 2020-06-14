@@ -29,7 +29,11 @@ def Q_Confirmation_Dialog(window_title, text, informative_text="", warning=False
 # Dialogue to reorder a list of strings.
 class Q_Reorder_Dialogue(QtWidgets.QDialog):
     # Passing a string to add_new_button will allow for new items to be added to the list.
-    def __init__(self, input_list, window_title="Reorder list", add_new_button=None, parent=None, *args, **kwargs):
+    def __init__(self, input_list, window_title="Reorder list", add_new_button=None, allow_duplicates=True, 
+        parent=None, *args, **kwargs):
+
+        self.allow_duplicates = allow_duplicates
+        
         super(Q_Reorder_Dialogue, self).__init__(parent=parent, *args, **kwargs)
         
         self.setWindowTitle(window_title)
@@ -43,13 +47,15 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
             new_item_layout = QtWidgets.QHBoxLayout()
 
             self.new_item_input_field = QtWidgets.QLineEdit(parent=self)
+            self.new_item_input_field.textChanged.connect(self.on_text_changed)
             new_item_layout.addWidget(self.new_item_input_field)
             
-            new_item_button = QtWidgets.QPushButton(parent=self)
-            new_item_button.setText(add_new_button)
-            new_item_button.clicked.connect(self.append_item)
+            self.new_item_button = QtWidgets.QPushButton(parent=self)
+            self.new_item_button.setText(add_new_button)
+            self.new_item_button.setEnabled(False)
+            self.new_item_button.clicked.connect(self.append_item)
             
-            new_item_layout.addWidget(new_item_button, alignment=Qt.AlignRight)
+            new_item_layout.addWidget(self.new_item_button, alignment=Qt.AlignRight)
 
             layout.addLayout(new_item_layout)
         
@@ -66,8 +72,19 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
 
     def append_item(self):
         item = self.new_item_input_field.text()
-        if not (item == "" or item.isspace()):
-            self.reorder_widget.append_item(item)
+        self.reorder_widget.append_item(item)
+        self.new_item_input_field.clear()
+
+    def on_text_changed(self):
+        if self.new_item_input_field.text() == "" or self.new_item_input_field.text().isspace():
+            self.new_item_button.setEnabled(False)
+        elif not self.allow_duplicates:
+            if self.new_item_input_field.text() in self.reorder_widget.get_items():
+                self.new_item_button.setEnabled(False)
+            else:
+                self.new_item_button.setEnabled(True)
+        else:
+            self.new_item_button.setEnabled(True)
 
     # Allows for unpacking of return_list and ok in single line.
     def __iter__(self):

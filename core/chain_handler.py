@@ -13,22 +13,17 @@ class Chain_Handler():
         self._chains_json_path = Path(chains_json_path)
         self._load_json()
 
-    def _get_chains_dict(self):
-        return {
-                "chain_order": self._chain_order, 
-                "chains": self._chains, 
-                "chain_comments": self._chain_comments
-                }
-    
     def _load_json(self):
         if (self._chains_json_path.is_file()):
             with open(self._chains_json_path, 'r') as file:
-                chains_dict = json_loads(file.read())
-                self._chains = chains_dict["chains"]
-                self._chain_order = chains_dict["chain_order"]
-                self._chain_comments = chains_dict["chain_comments"]
+                self._chains_dict = json_loads(file.read())
+                self._chains = self._chains_dict["chains"]
+                self._chain_order = self._chains_dict["chain_order"]
+                self._chain_comments = self._chains_dict["chain_comments"]
                 logging.info(f"Loaded chains data from '{self._chains_json_path}'.")
         else:
+            self._chains_json_path.parent.mkdir(parents=True, exist_ok=True)
+            self._chains_json_path.touch(exist_ok=True)
             self._chains = {}
             self._chain_order = []
             self._chain_comments = {}
@@ -36,8 +31,7 @@ class Chain_Handler():
 
     def _save_json(self):
         try:
-            chains_dict = self._get_chains_dict()
-            serialized_json = json_dumps(chains_dict, indent=1)
+            serialized_json = json_dumps(self._chains_dict, indent=0)
             with open(self._chains_json_path, 'w') as file:
                 file.write(serialized_json)
                 logging.info(f"Saved chains data to '{self._chains_json_path}'.")
@@ -75,9 +69,17 @@ class Chain_Handler():
         
         day_index = day - 1
         old_value = self._chains[chain_name][year][month][day_index]
-        logging.info(f"Changed chain '{chain_name}' at {year}/{month}/{day} from '{old_value}' to '{new_value}'.")
         self._chains[chain_name][year][month][day_index] = new_value
+        logging.info(f"Changed chain '{chain_name}' at {year}/{month}/{day} from '{old_value}' to '{new_value}'.")
+        self._delete_chain_if_empty(chain_name, year, month)
         self._save_json()
+
+    # Removes chain link lists that are all 0 and any empty year/month dictionaries.
+    def _delete_chain_if_empty(self, chain_name, year, month):
+        if max(self._chains[chain_name][year][month]) == 0:
+            del self._chains[chain_name][year][month]
+            if not self._chains[chain_name][year]:
+                del self._chains[chain_name][year]
 
     # Try to check the value of the chain at the date. If it's missing, return 0.
     def get_chain(self, chain, year=None, month=None, day=None, date=None):
@@ -141,9 +143,20 @@ class Chain_Handler():
             old_comment = self.get_chain_comment(chain_name, year, month, day)
             del self._chain_comments[chain_name][year][month][day]
             logging.info(f"Deleted chain '{chain_name}' comment '{old_comment}' at {year}/{month}/{day}.")
+            self._delete_chain_comment_dictionaries_if_empty(chain_name, year, month)
             self._save_json()
         except KeyError:
-            logging.info(f"Tried to delete chain '{chain_name}' comment at {year}/{month}/{day} but there was no comment.")
+            logging.info(
+                f"Tried to delete chain '{chain_name}' comment at {year}/{month}/{day} but there was no comment.")
+
+    # Removes chain_comments dictionaries that are empty.
+    def _delete_chain_comment_dictionaries_if_empty(self, chain_name, year, month):
+        if not self._chain_comments[chain_name][year][month]:
+            del self._chain_comments[chain_name][year][month]
+            if not self._chain_comments[chain_name][year]:
+                del self._chain_comments[chain_name][year]
+                if not self._chain_comments[chain_name]:
+                    del self._chain_comments[chain_name]
 
     # Return the comment for a chain at a date. If it's not present in the json, return None.
     def get_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
