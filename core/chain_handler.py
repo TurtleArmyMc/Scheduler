@@ -49,6 +49,23 @@ class Chain_Handler():
         logging.info(f"Created new chain '{chain_name}'.")
         self._save_json()
     
+    def rename_chain(self, current_name, new_name):
+        if new_name in self._chains:
+            raise NameError(f"'{new_name}' already exists in chains.")
+        else:
+            chain_order_index = self._chain_order.index(current_name)
+            self._chain_order[chain_order_index] = new_name
+
+            self._chains[new_name] = self._chains[current_name]
+            del self._chains[current_name]
+            
+            if current_name in self._chain_comments:
+                self._chain_comments[new_name] = self._chain_comments[current_name]
+                del self._chain_comments[current_name] 
+            logging.info(f"Renamed chain '{current_name}' to '{new_name}'.")
+            
+            self._save_json()
+
     def get_chain_order(self):
         return self._chain_order.copy()
 
@@ -109,7 +126,7 @@ class Chain_Handler():
     def delete_chain(self, chain_name):
         if chain_name in self._chain_order:
             self._chain_order.remove(chain_name)
-            self._chains.pop(chain_name)
+            del self._chains[chain_name]
             self._chain_comments.pop(chain_name, None)
             logging.info(f"Deleted chain '{chain_name}'.")
             self._save_json()

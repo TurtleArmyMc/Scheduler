@@ -187,6 +187,9 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
             delete_comment_action = QtWidgets.QAction("Delete comment.", parent=self)
             delete_comment_action.triggered.connect(self.delete_comment)
             self.context_menu.addAction(delete_comment_action)
+        rename_chain_action = QtWidgets.QAction("Rename chain.", parent=self)
+        rename_chain_action.triggered.connect(self.rename_chain)
+        self.context_menu.addAction(rename_chain_action)
         delete_chain_action = QtWidgets.QAction("Delete chain.", parent=self)
         delete_chain_action.triggered.connect(self.delete_chain)
         self.context_menu.addAction(delete_chain_action)
@@ -200,6 +203,30 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
             chain_handler.delete_chain(self.chain_name)
             self.parent.load_chain_layout_ui()
     
+    def rename_chain(self):
+        new_name, ok = QtWidgets.QInputDialog(self).getText(self, f"Rename '{self.chain_name}'", "New name:")
+        if ok:
+            if new_name == "" or new_name.isspace():
+                error_dialog = QtWidgets.QMessageBox(parent=self)
+                error_dialog.setWindowTitle("Rename failed")
+                error_dialog.setText("Error")
+                error_dialog.setInformativeText("New name can not be empty.")
+                error_dialog.setIcon(QtWidgets.QMessageBox.Critical)
+                error_dialog.exec_()
+            else:
+                try:
+                    chain_handler.rename_chain(self.chain_name, new_name)
+                    self.parent.load_chain_layout_ui()
+                except NameError:
+                    error_dialog = QtWidgets.QMessageBox(parent=self)
+                    error_dialog.setWindowTitle("Rename failed")
+                    error_dialog.setText("Error")
+                    error_dialog.setInformativeText(f"Error: '{new_name}' is already in use.")
+                    error_dialog.setIcon(QtWidgets.QMessageBox.Critical)
+                    error_dialog.exec_()
+                except:
+                    raise
+
     def edit_comment(self):
         comment, ok = QtWidgets.QInputDialog(self).getText(self, "Comment", "Set comment:")
         if comment and ok:
