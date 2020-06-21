@@ -1,5 +1,5 @@
 import logging
-from json import loads as json_loads, dumps as json_dumps
+import json
 from pathlib import Path
 
 import core.helpers as h
@@ -16,7 +16,7 @@ class Chain_Handler():
     def _load_json(self):
         if (self._chains_json_path.is_file()):
             with open(self._chains_json_path, 'r') as file:
-                self._chains_dict = json_loads(file.read())
+                self._chains_dict = json.loads(file.read())
                 self._chains = self._chains_dict["chains"]
                 self._chain_order = self._chains_dict["chain_order"]
                 self._chain_comments = self._chains_dict["chain_comments"]
@@ -36,7 +36,7 @@ class Chain_Handler():
 
     def _save_json(self):
         try:
-            serialized_json = json_dumps(self._chains_dict, indent=0)
+            serialized_json = json.dumps(self._chains_dict, indent=0)
             with open(self._chains_json_path, 'w') as file:
                 file.write(serialized_json)
                 logging.info(f"Saved chains data to '{self._chains_json_path}'.")

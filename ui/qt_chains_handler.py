@@ -119,10 +119,9 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
 
 # Widget used to represent the chain links for each day in a chain.
 class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
-    def __init__(self, parent, chain_name, year=None, month=None, day=None, date=None, state=None, *args, **kwargs):
+    def __init__(self, parent:Q_Chain_Handler_Widget, 
+        chain_name, year=None, month=None, day=None, date=None, state=None, *args, **kwargs):
         super(Q_Chain_Link_Checkbox, self).__init__(parent=parent, *args, **kwargs)
-
-        self.parent = parent
 
         chain_link_checkbox_stylesheet = """QCheckBox { margin-left: 50px; font-size:80px } 
             QCheckBox::indicator { width: 80px; height: 80px }"""
@@ -176,21 +175,21 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
         self.context_menu.clear()
 
         if self.comment is None:
-            create_comment_action = QtWidgets.QAction("Create new comment.", parent=self)
+            create_comment_action = QtWidgets.QAction("Create new comment", parent=self.context_menu)
             create_comment_action.triggered.connect(self.edit_comment)
             self.context_menu.addAction(create_comment_action)
         else:
-            edit_comment_action = QtWidgets.QAction("Edit comment.", parent=self)
+            edit_comment_action = QtWidgets.QAction("Edit comment", parent=self.context_menu)
             edit_comment_action.triggered.connect(self.edit_comment)
             self.context_menu.addAction(edit_comment_action)
             
-            delete_comment_action = QtWidgets.QAction("Delete comment.", parent=self)
+            delete_comment_action = QtWidgets.QAction("Delete comment", parent=self.context_menu)
             delete_comment_action.triggered.connect(self.delete_comment)
             self.context_menu.addAction(delete_comment_action)
-        rename_chain_action = QtWidgets.QAction("Rename chain.", parent=self)
+        rename_chain_action = QtWidgets.QAction("Rename chain", parent=self.context_menu)
         rename_chain_action.triggered.connect(self.rename_chain)
         self.context_menu.addAction(rename_chain_action)
-        delete_chain_action = QtWidgets.QAction("Delete chain.", parent=self)
+        delete_chain_action = QtWidgets.QAction("Delete chain", parent=self.context_menu)
         delete_chain_action.triggered.connect(self.delete_chain)
         self.context_menu.addAction(delete_chain_action)
 
@@ -201,7 +200,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
         ok = Q_Confirmation_Dialog("Confirm deletion", text, informative_text, warning=True)
         if ok:
             chain_handler.delete_chain(self.chain_name)
-            self.parent.load_chain_layout_ui()
+            self.parent().load_chain_layout_ui()
     
     def rename_chain(self):
         new_name, ok = QtWidgets.QInputDialog(self).getText(self, f"Rename '{self.chain_name}'", "New name:")
@@ -216,7 +215,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
             else:
                 try:
                     chain_handler.rename_chain(self.chain_name, new_name)
-                    self.parent.load_chain_layout_ui()
+                    self.parent().load_chain_layout_ui()
                 except NameError:
                     error_dialog = QtWidgets.QMessageBox(parent=self)
                     error_dialog.setWindowTitle("Rename failed")

@@ -3,6 +3,7 @@ from PySide2 import QtWidgets
 from PySide2.QtGui import QIcon
 
 from ui.qt_chains_handler import Q_Chain_Handler_Widget
+from ui.qt_todo_handler import Q_Todo_Handler_Widget
 
 
 class Main_Window(QtWidgets.QMainWindow):
@@ -11,11 +12,19 @@ class Main_Window(QtWidgets.QMainWindow):
         self.setWindowTitle("Scheduler")
         self.setWindowIcon(QIcon("resources/Clock.ico"))
 
-        self.chain_handler_widget = Q_Chain_Handler_Widget(self)
-        self.scroll_area = QtWidgets.QScrollArea()
-        self.scroll_area.setWidget(self.chain_handler_widget)
-        self.scroll_area.setWidgetResizable(True) # Allows widget to expand and scroll in the scroll area.
-        self.setCentralWidget(self.scroll_area)
+        self.tabs = QtWidgets.QTabWidget(self)
+        
+        self.add_tab(Q_Todo_Handler_Widget(), "Todo List")
+        self.add_tab(Q_Chain_Handler_Widget(), "Chains")
+
+        self.setCentralWidget(self.tabs)
+
+    def add_tab(self, widget:QtWidgets.QWidget, name:str):
+        widget_scroll_area = QtWidgets.QScrollArea()
+        widget_scroll_area.setWidget(widget)
+        widget_scroll_area.setWidgetResizable(True) # Allows widget to expand and scroll in the scroll area.
+        self.tabs.addTab(widget_scroll_area, name)
+
 
 
 class System_Tray_Icon(QtWidgets.QSystemTrayIcon):

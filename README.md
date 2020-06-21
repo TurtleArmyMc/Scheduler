@@ -1,5 +1,8 @@
 # Scheduler
-Scheduler is a clone of chains.cc, which is a tool to keep track of habits by visualizing goals as chains to keep up and not break.
+Scheduler is a tool to keep track of goals inspired by chains.cc
+
+## Features
+Scheduler includes a to-do list manager and a 'chain' manager, which visualizes long term goals as chains to be maintained without breaking. 
 
 ## Requirements
 Scheduler requires PySide2 to use.
