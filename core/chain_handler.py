@@ -71,9 +71,11 @@ class Chain_Handler():
 
     def edit_chain_order(self, new_order):
         # Check to see that the new order contains the same chains.
-        if new_order.copy().sort() == self.get_chain_order().sort():
-            self._chain_order = new_order.copy()
-            logging.info(f"Reordered chains.")
+        old_order = self.get_chain_order()
+        if new_order.copy().sort() == old_order.sort():
+            self._chains_dict["chain_order"] = new_order.copy()
+            self._chain_order = self._chains_dict["chain_order"]
+            logging.info(f"Reordered chains from to {old_order} to {new_order}.")
             self._save_json()
         else:
             raise SyntaxError("New chain order must contain the same names as the old order.")
