@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
+import datetime
 
 from core.chain_handler import chain_handler
 
@@ -21,8 +22,8 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         layout.addLayout(self.chain_layout)
 
         # Create button for loading more chain links.
-        load_previous_month_button = QtWidgets.QPushButton("Load previous month's chains.")
-        load_previous_month_button.clicked.connect(self.load_chain_links_previous_month)
+        load_previous_month_button = QtWidgets.QPushButton("Load more chains.")
+        load_previous_month_button.clicked.connect(lambda: self.load_chains(14))
         layout.addWidget(load_previous_month_button)
 
         # Prevents vertical stretching of layout in scroll area.
@@ -35,11 +36,9 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         self.clear_chain_layout_ui()
         self.create_chain_labels()
 
-        # Load chains links for current month and previous month. 
-        self.load_month = h.get_current_month()
-        self.load_year = h.get_current_year()
-        self.load_chain_links_previous_month()
-        self.load_chain_links_previous_month()
+        # Load chains links for next 2 weeks.
+        self.date_iterator = h.date_iterator(datetime.timedelta(days=-1), date=datetime.date.today())
+        self.load_chains(14)
 
     def clear_chain_layout_ui(self):
         for column in range(self.chain_layout.columnCount()):
@@ -68,42 +67,28 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
 
         # Prevents horizontal stretching of layout in scroll_area.
         self.chain_layout.setColumnStretch(self.chain_layout.columnCount(), 1)
-        
-    # Loads all the chains links for a month.
-    def load_chains_month(self, year, month):
+
+    def load_chains(self, days):
         date_label_style_sheet = "font-size: 25px"
 
-        if not (month == h.get_current_month() and year == h.get_current_year()):
-            start_day = h.days_in_month(year, month)
-        else:
-            start_day = h.get_current_day()
-        
         row = self.chain_layout.rowCount()
         date_label_column = 0
-        for day in range(start_day, 0, -1):
-            weekday = h.get_weekday(year, month, day)
-            
+
+        for _ in range(days):
+            date = next(self.date_iterator)
+
+            weekday = h.get_weekday(date=date)
             date_label = QtWidgets.QLabel(parent=self)
             date_label.setStyleSheet(date_label_style_sheet)
-            date_label.setText(f"{weekday} {month}/{day}/{str(year)[2:]}")
+            date_label.setText(f"{weekday} {date.month}/{date.day}/{str(date.year)[2:]}")
             
             self.chain_layout.addWidget(date_label, row, date_label_column)
 
             for index, chain_name in enumerate(chain_handler.get_chain_order()):
                 column = index + 1 
-                chain_link = Q_Chain_Link_Checkbox(self, chain_name, year, month, day)
+                chain_link = Q_Chain_Link_Checkbox(self, chain_name, date=date)
                 self.chain_layout.addWidget(chain_link, row, column)
             row += 1
-
-    # Loads all chain links for the next unloaded month.
-    def load_chain_links_previous_month(self):
-        self.load_chains_month(self.load_year, self.load_month)
-        
-        if (self.load_month != 1):
-            self.load_month -= 1
-        else:
-            self.load_month = 12 
-            self.load_year -= 1
 
     def edit_chain_order(self):
         old_chain_order = chain_handler.get_chain_order()

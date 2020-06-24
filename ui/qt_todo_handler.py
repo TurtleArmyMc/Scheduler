@@ -60,8 +60,17 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         return [self.topLevelItem(i).to_dict() for i in range(self.topLevelItemCount())]
 
     def new_tree_item(self):
-        new_item = Q_Todo_Item("Unnamed item", parent=self)
-        new_item.setSelected(True)
+        item = Q_Todo_Item("Unnamed item", parent=self)
+        self.deselect_all_items()
+        self.scrollToItem(item)
+        item.setSelected(True)
+        self.setFocus()
+        self.setCurrentItem(item)
+        self.editItem(item, 0)
+
+    def deselect_all_items(self):
+        for item in self.selectedItems():
+            item.setSelected(False)
 
     def clear_checked_items(self):
         items = [self.topLevelItem(i) for i in range(self.topLevelItemCount())]

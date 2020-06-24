@@ -13,6 +13,8 @@ class Main_Window(QtWidgets.QMainWindow):
         self.setWindowIcon(QIcon("resources/Clock.ico"))
 
         self.tabs = QtWidgets.QTabWidget(self)
+        tabs_style_sheet = "QTabWidget { font-size: 25px; }"
+        self.tabs.setStyleSheet(tabs_style_sheet)
         
         self.add_tab(Q_Todo_Handler_Widget(), "Todo List")
         self.add_tab(Q_Chain_Handler_Widget(), "Chains")

@@ -58,3 +58,10 @@ def get_current_day() -> int:
 def get_weekday(year=None, month=None, day=None, date=None) -> str:
     year, month, day = format_date_iii(year, month, day, date)
     return datetime.date(year, month, day).strftime("%a")
+
+
+def date_iterator(timedelta: datetime.timedelta, year=None, month=None, day=None, date=None):
+    date = datetime.date(*format_date_iii(year, month, day, date))
+    while True:
+        yield date
+        date += timedelta
