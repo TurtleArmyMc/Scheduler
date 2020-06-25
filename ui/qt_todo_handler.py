@@ -36,7 +36,16 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         self.setStyleSheet(todo_tree_stylesheet)
 
         self.setDragDropMode(self.InternalMove)
-        self.setHeaderLabel("TODO")
+
+        self.setColumnCount(2)
+        
+        # Set last column (due_date column) to stretch only as large as it needs to be to fit its contents.
+        header = self.header()
+        header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+
+        self.setHeaderLabels(["TODO", "Due Date"])
 
         self.init_context_menu()
 
@@ -80,6 +89,7 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
                 item.delete()
 
     def dropEvent(self, event):
+        # Save todo list when todo items are reordered.
         super(Q_Todo_Tree_Widget, self).dropEvent(event)
         self.save_tree_to_json()
 
@@ -111,13 +121,16 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
 
 
 class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
-    def __init__(self, name, completed=False, items=None, parent=None):
+    def __init__(self, name, completed=False, due_date=None, items=None, parent=None):
         super(Q_Todo_Item, self).__init__(parent)
         
         self.setFlags(Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | 
             Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled)
 
         self.setText(0, name)
+        if due_date is not None:
+            self.setText(1, due_date)
+
         if completed == True:
             self.setCheckState(0, Qt.CheckState.Checked)
         else:
@@ -154,6 +167,9 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
         else:
             ret["completed"] = False
         
+        if self.text(1) != "" and not self.text(1).isspace():
+            ret["due_date"] = self.text(1)
+
         if self.childCount() != 0:
             ret["items"] = [self.child(i).to_dict() for i in range(self.childCount())]
 

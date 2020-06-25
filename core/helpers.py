@@ -42,18 +42,6 @@ def days_in_month(year, month) -> int:
     return monthrange(int(year), int(month))[1]
 
 
-def get_current_year() -> int:
-    return datetime.date.today().year
-
-
-def get_current_month() -> int:
-    return datetime.date.today().month
-
-
-def get_current_day() -> int:
-    return datetime.date.today().day
-
-
 # Returns an abreviated weekday from date (Sun, Mon, Tue, etc.)
 def get_weekday(year=None, month=None, day=None, date=None) -> str:
     year, month, day = format_date_iii(year, month, day, date)
