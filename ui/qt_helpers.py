@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide2 import QtCore
+import datetime
 
 
 # Dialog to confirm or cancel action.
@@ -55,7 +56,7 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
             self.new_item_button.setEnabled(False)
             self.new_item_button.clicked.connect(self.append_item)
             
-            new_item_layout.addWidget(self.new_item_button, alignment=Qt.AlignRight)
+            new_item_layout.addWidget(self.new_item_button, alignment=QtCore.Qt.AlignRight)
 
             layout.addLayout(new_item_layout)
         
@@ -109,3 +110,32 @@ class Q_Reorder_Widget(QtWidgets.QListWidget):
 
     def get_items(self):
         return [self.item(i).text() for i in range(self.count())]
+
+
+def date_string_to_qdate(string:str) -> QtCore.QDate:
+    # Assumes mm/dd/yy date format
+    try:
+        _date = datetime.date.today()
+        year, month, day = _date.year, _date.month, _date.day
+
+        split_string = string.split("/")
+        if len(split_string) == 3:
+            month, day, year = split_string
+            month, day, year = int(month), int(day), int(year) 
+        elif len(split_string) == 2:
+            month, day = split_string
+            month, day = int(month), int(day) 
+        else:
+            return None
+
+        qdate = QtCore.QDate()
+        qdate.setDate(year, month, day)
+
+        return qdate
+    except:
+        return None
+
+
+def qdate_is_weekend(qdate:QtCore.QDate) -> bool:
+    day_of_week = qdate.dayOfWeek()
+    return day_of_week == 6 or day_of_week == 7
