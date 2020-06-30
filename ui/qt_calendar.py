@@ -21,7 +21,7 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
         uncompleted_todo_item = QtGui.QColor(255, 0, 0)
     
     def __init__(self, *args, **kwargs):
-        self.todo_items = todo_handler.flat_item_list()
+        self.update_items_dict()
 
         super(Q_Todo_Calendar, self).__init__(*args, **kwargs)
         self.setFirstDayOfWeek(QtCore.Qt.DayOfWeek.Monday)
@@ -50,14 +50,10 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
 
         # Get todo items to paint
         items = []
-        completed_items_num = 0
-        for item in self.todo_items:
-            if "due_date" in item:
-                if item["due_date"] is not None:
-                    item_due_date = date_string_to_qdate(item["due_date"])
-                    if item_due_date is not None:
-                        if date == item_due_date:
-                            items.append(item)
+        try:
+            items = self.todo_item_dict[date.year()][date.month()][date.day()]
+        except KeyError:
+            pass
 
         if len(items) != 0:
             # Paint number of todo items
@@ -86,6 +82,24 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
                 painter.setFont(QtGui.QFont("Helvetica", 10))
                 painter.drawText(rect.x() + x, rect.y() + y, width, height, 0, item["name"])
 
+    def update_items_dict(self):
+        # Accessing items: self.todo_item_dict[year: int][month: int][day: int] -> list
+        self.todo_item_dict = {}
+        for item in todo_handler.flat_item_list():
+            if "due_date" in item:
+                date = date_string_to_qdate(item["due_date"])
+                if date is not None:
+                    year, month, day = date.year(), date.month(), date.day()
+
+                    if year not in self.todo_item_dict:
+                        self.todo_item_dict[year] = {}
+                    if month not in self.todo_item_dict[year]:
+                        self.todo_item_dict[year][month] = {}
+                    if day not in self.todo_item_dict[year][month]:
+                        self.todo_item_dict[year][month][day] = []
+
+                    self.todo_item_dict[year][month][day].append(item)
+
     def on_todolist_update(self):
-        self.todo_items = todo_handler.flat_item_list()
+        self.update_items_dict()
         self.update()
