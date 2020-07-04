@@ -1,6 +1,13 @@
 from PySide2 import QtWidgets
-from PySide2 import QtCore
+from PySide2 import QtCore, QtGui
 import datetime
+
+
+def scroll_area_wrapper(widget:QtWidgets.QWidget) -> QtWidgets.QScrollArea:
+    widget_scroll_area = QtWidgets.QScrollArea()
+    widget_scroll_area.setWidget(widget)
+    widget_scroll_area.setWidgetResizable(True) # Allows widget to expand and scroll in the scroll area.
+    return widget_scroll_area
 
 
 # Dialog to confirm or cancel action.

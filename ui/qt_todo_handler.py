@@ -2,28 +2,36 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Qt
 
 from core.todo_handler import todo_handler
-
 import core.helpers as h
+
+from ui.qt_calendar import Q_Todo_Calendar
 
 
 # Widget to load and display todo items.
-class Q_Todo_Handler_Widget(QtWidgets.QWidget):
+class Q_Todo_Handler_Widget(QtWidgets.QSplitter):
     def __init__(self, *args, **kwargs):
         super(Q_Todo_Handler_Widget, self).__init__(*args, **kwargs)
 
+        todo_tree_wrapper = QtWidgets.QWidget(self)
+        todo_tree_wrapper.save_tree_to_json = self.save_tree_to_json
         layout = QtWidgets.QVBoxLayout(self)
-        
-        self.tree_view = Q_Todo_Tree_Widget(self, todo_handler.todo_list)
-        layout.addWidget(self.tree_view)
 
+        self.tree_widget = Q_Todo_Tree_Widget(self, todo_handler.todo_list)
+        layout.addWidget(self.tree_widget)
+        
         new_item_button = QtWidgets.QPushButton("Add new todo item.", self)
-        new_item_button.clicked.connect(self.tree_view.new_tree_item)
+        new_item_button.clicked.connect(self.tree_widget.new_tree_item)
         layout.addWidget(new_item_button)
 
-        self.setLayout(layout)
+        todo_tree_wrapper.setLayout(layout)
+
+        self.addWidget(todo_tree_wrapper)
+
+        self.calendar = Q_Todo_Calendar(parent=self)
+        self.addWidget(self.calendar)
 
     def save_tree_to_json(self):
-        todo_handler.todo_list = self.tree_view.to_list()
+        todo_handler.todo_list = self.tree_widget.to_list()
         todo_handler.save_json()
 
 

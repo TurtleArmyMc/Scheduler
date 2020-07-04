@@ -2,8 +2,11 @@ import sys
 from PySide2 import QtWidgets
 from PySide2.QtGui import QIcon
 
+from ui.qt_helpers import scroll_area_wrapper
+
 from ui.qt_chains_handler import Q_Chain_Handler_Widget
 from ui.qt_todo_handler import Q_Todo_Handler_Widget
+from ui.qt_calendar import Q_Todo_Calendar
 
 
 class Main_Window(QtWidgets.QMainWindow):
@@ -16,17 +19,10 @@ class Main_Window(QtWidgets.QMainWindow):
         tabs_style_sheet = "QTabWidget { font-size: 25px; }"
         self.tabs.setStyleSheet(tabs_style_sheet)
         
-        self.add_tab(Q_Todo_Handler_Widget(), "Todo List")
-        self.add_tab(Q_Chain_Handler_Widget(), "Chains")
+        self.tabs.addTab(Q_Todo_Handler_Widget(), "Todo List")
+        self.tabs.addTab(scroll_area_wrapper(Q_Chain_Handler_Widget()), "Chains")
 
         self.setCentralWidget(self.tabs)
-
-    def add_tab(self, widget:QtWidgets.QWidget, name:str):
-        widget_scroll_area = QtWidgets.QScrollArea()
-        widget_scroll_area.setWidget(widget)
-        widget_scroll_area.setWidgetResizable(True) # Allows widget to expand and scroll in the scroll area.
-        self.tabs.addTab(widget_scroll_area, name)
-
 
 
 class System_Tray_Icon(QtWidgets.QSystemTrayIcon):

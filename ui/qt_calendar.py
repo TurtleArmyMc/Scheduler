@@ -30,7 +30,7 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
 
         todo_handler.todolist_update_event.connect(self.on_todolist_update)
 
-    def paintCell(self, painter, rect, date):
+    def paintCell(self, painter:QtGui.QPainter, rect:QtCore.QRect, date:QtCore.QDate):
         # Paint background
         if self.selectedDate() == date:
             painter.fillRect(rect, self.Color.selected_background)
@@ -57,30 +57,34 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
 
         if len(items) != 0:
             # Paint number of todo items
-            # Text color is same is date
+            # Text color is same is date's
             completed_items_num = len([item for item in items if item["completed"]])
             x = 40
             y = 5
+            width = rect.width() - x
             painter.setFont(QtGui.QFont("Helvetica", 14))
             item_number_str = f"{completed_items_num}/{len(items)} items"
-            painter.drawText(rect.x() + x, rect.y() + y, rect.width() - x, rect.height(), 0, item_number_str)
+            painter.drawText(rect.x() + x, rect.y() + y, width, rect.height(), 0, item_number_str)
 
             # Paint todo items
             x = 5
-            y = 12
+            y = 32
             width = rect.width() - x
-            height = 20
+            painter.setFont(QtGui.QFont("Helvetica", 10))
             for item in items:
-                y += height
-                if y + height > rect.height():
+                if y  > rect.height():
                     break
                 
                 if item["completed"]:
                     painter.setPen(self.Color.completed_todo_item)
                 else:
                     painter.setPen(self.Color.uncompleted_todo_item)
-                painter.setFont(QtGui.QFont("Helvetica", 10))
-                painter.drawText(rect.x() + x, rect.y() + y, width, height, 0, item["name"])
+
+                height = rect.height() - y
+                bounding_rect = painter.boundingRect(
+                    rect.x() + x, rect.y() + y, width, height, QtCore.Qt.TextWordWrap, item["name"])
+                painter.drawText(rect.x() + x, rect.y() + y, width, height, QtCore.Qt.TextWordWrap, item["name"])
+                y += bounding_rect.height()
 
     def update_items_dict(self):
         # Accessing items: self.todo_item_dict[year: int][month: int][day: int] -> list
@@ -102,4 +106,4 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
 
     def on_todolist_update(self):
         self.update_items_dict()
-        self.update()
+        self.updateCells()
