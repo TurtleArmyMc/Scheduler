@@ -6,7 +6,6 @@ from ui.qt_helpers import scroll_area_wrapper
 
 from ui.qt_chains_handler import Q_Chain_Handler_Widget
 from ui.qt_todo_handler import Q_Todo_Handler_Widget
-from ui.qt_calendar import Q_Todo_Calendar
 
 
 class Main_Window(QtWidgets.QMainWindow):
