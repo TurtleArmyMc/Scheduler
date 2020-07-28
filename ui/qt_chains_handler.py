@@ -1,5 +1,4 @@
-from PySide2 import QtWidgets
-from PySide2.QtCore import Qt
+from PySide2 import QtWidgets, QtCore
 import datetime
 
 from core.chain_handler import chain_handler
@@ -63,7 +62,7 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         edit_chains_button = QtWidgets.QPushButton(parent=self)
         edit_chains_button.setText("Edit chains.")
         edit_chains_button.clicked.connect(self.edit_chain_order)
-        self.chain_layout.addWidget(edit_chains_button, row, self.chain_layout.columnCount(), alignment=Qt.AlignLeft)
+        self.chain_layout.addWidget(edit_chains_button, row, self.chain_layout.columnCount(), alignment=QtCore.Qt.AlignLeft)
 
         # Prevents horizontal stretching of layout in scroll_area.
         self.chain_layout.setColumnStretch(self.chain_layout.columnCount(), 1)
@@ -125,9 +124,9 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
             state = chain_handler.get_chain(self.chain_name, self.year, self.month, self.day)
             
         if state == 1:
-            self.setCheckState(Qt.CheckState.Checked)
+            self.setCheckState(QtCore.Qt.CheckState.Checked)
         else:
-            self.setCheckState(Qt.CheckState.Unchecked)
+            self.setCheckState(QtCore.Qt.CheckState.Unchecked)
 
         self.stateChanged.connect(self.on_state_change)
 
@@ -151,7 +150,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     # Load the context menu for editing the chain link's comment tooltip and deleting the chain.
     def init_context_menu(self):
         self.context_menu = QtWidgets.QMenu(self)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.on_context_menu)
         self.load_context_menu()
 
@@ -212,7 +211,8 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
                     raise
 
     def edit_comment(self):
-        comment, ok = QtWidgets.QInputDialog(self).getText(self, "Comment", "Set comment:")
+        comment, ok = QtWidgets.QInputDialog(self).getText(
+            self, "Comment", "Set comment:", QtWidgets.QLineEdit.Normal, self.comment)
         if comment and ok:
             chain_handler.edit_chain_comment(self.chain_name, comment, self.year, self.month, self.day)
             self.load_comment(comment)
@@ -226,7 +226,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     # Update chains json when checkbox state is changed.
     def on_state_change(self):
         new_value = 0
-        if self.checkState() == Qt.CheckState.Checked:
+        if self.checkState() == QtCore.Qt.CheckState.Checked:
             new_value = 1
         chain_handler.edit_chain(self.chain_name, new_value, self.year, self.month, self.day)
 
