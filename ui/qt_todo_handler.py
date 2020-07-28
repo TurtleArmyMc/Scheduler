@@ -44,6 +44,7 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         self.setStyleSheet(todo_tree_stylesheet)
 
         self.setDragDropMode(self.InternalMove)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.setColumnCount(2)
         
