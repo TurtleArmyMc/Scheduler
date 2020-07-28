@@ -1,11 +1,10 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 import datetime
 
-from core.todo_handler import todo_handler
+from core.todo_handler import todo_handler, todo_item_is_completed
 
 import core.helpers as h
 from ui.qt_helpers import date_string_to_qdate, qdate_is_weekend
-
 
 
 # Calendar to display todo items based on their due date.
@@ -102,7 +101,19 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
                     if day not in self.todo_item_dict[year][month]:
                         self.todo_item_dict[year][month][day] = []
 
-                    self.todo_item_dict[year][month][day].append(item)
+                    # If item is complete, append to the end of the list. If it is incomplete, append after the last
+                    # incomplete item in the list.
+                    if todo_item_is_completed(item):
+                        self.todo_item_dict[year][month][day].append(item)
+                    else:
+                        insert_index = 0
+                        for index, check_item in enumerate(self.todo_item_dict[year][month][day]):
+                            if todo_item_is_completed(check_item):
+                                break
+                            else:
+                                insert_index = index + 1
+                        self.todo_item_dict[year][month][day].insert(insert_index, item)
+
 
     def on_todolist_update(self):
         self.update_items_dict()

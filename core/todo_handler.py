@@ -49,4 +49,11 @@ class Todo_Handler():
         return ret
 
 
+def todo_item_is_completed(item: dict) -> bool:
+    try:
+        return item["completed"]
+    except KeyError:
+        return False
+
+
 todo_handler = Todo_Handler()
