@@ -20,7 +20,7 @@ class Q_Todo_Handler_Widget(QtWidgets.QSplitter):
         layout.addWidget(self.tree_widget)
         
         new_item_button = QtWidgets.QPushButton("Add new todo item.", self)
-        new_item_button.clicked.connect(self.tree_widget.new_tree_item)
+        new_item_button.clicked.connect(lambda: self.tree_widget.new_tree_item())
         layout.addWidget(new_item_button)
 
         todo_tree_wrapper.setLayout(layout)
@@ -76,8 +76,10 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
     def to_list(self):
         return [self.topLevelItem(i).to_dict() for i in range(self.topLevelItemCount())]
 
-    def new_tree_item(self):
-        item = Q_Todo_Item("Unnamed item", parent=self)
+    def new_tree_item(self, parent=None):
+        if parent is None:
+            parent = self
+        item = Q_Todo_Item("Unnamed item", parent=parent)
         self.deselect_all_items()
         self.scrollToItem(item)
         item.setSelected(True)
@@ -115,6 +117,13 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
             delete_item_action.triggered.connect(item.delete)
             self.context_menu.addAction(delete_item_action)
         
+        add_child_action = QtWidgets.QAction("Add todo item", parent=self.context_menu)
+        if item is not None:
+            add_child_action.triggered.connect(item.add_child_todo_item)
+        else:
+            add_child_action.triggered.connect(lambda: self.new_tree_item())
+        self.context_menu.addAction(add_child_action)
+
         clear_checked_items_action = QtWidgets.QAction("Clear completed items", parent=self.context_menu)
         clear_checked_items_action.triggered.connect(self.clear_checked_items)
         self.context_menu.addAction(clear_checked_items_action)
@@ -164,6 +173,9 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
             i = tree_widget.indexOfTopLevelItem(self)
             tree_widget.takeTopLevelItem(i)
         tree_widget.save_tree_to_json()
+
+    def add_child_todo_item(self):
+        self.treeWidget().new_tree_item(self)
 
     def to_dict(self):
         ret = {
