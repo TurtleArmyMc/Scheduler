@@ -1,4 +1,4 @@
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 from PySide2.QtCore import Qt
 
 from core.todo_handler import todo_handler
@@ -101,8 +101,12 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
 
     def dropEvent(self, event):
         # Save todo list when todo items are reordered.
+        selected_items = self.selectedItems()
         super(Q_Todo_Tree_Widget, self).dropEvent(event)
         self.save_tree_to_json()
+        for item in selected_items:
+            item.setSelected(True)
+        self.scrollToItem(selected_items[0])
 
     def init_context_menu(self):
         self.context_menu = QtWidgets.QMenu(self)
