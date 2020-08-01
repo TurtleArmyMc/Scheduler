@@ -91,8 +91,8 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
 
     def edit_chain_order(self):
         old_chain_order = chain_handler.get_chain_order()
-        new_chain_order, ok = Q_Reorder_Dialogue(
-            old_chain_order, "Edit chains", "Add chain", allow_duplicates=False, parent=self)
+        new_chain_order, ok = Q_Reorder_Dialogue(self).get_order(
+            old_chain_order, "Edit chains", "Add chain", allow_duplicates=False)
         if ok:
             for chain_name in new_chain_order:
                 if chain_name not in old_chain_order:
@@ -181,7 +181,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     def delete_chain(self):
         text = f"Delete chain '{self.chain_name}'?"
         informative_text = "WARNING: This can not be undone."
-        ok = Q_Confirmation_Dialog("Confirm deletion", text, informative_text, warning=True)
+        ok = Q_Confirmation_Dialog(self).get_ok("Confirm deletion", text, informative_text, warning=True)
         if ok:
             chain_handler.delete_chain(self.chain_name)
             self.parent().load_chain_layout_ui()

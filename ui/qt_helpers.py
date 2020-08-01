@@ -11,38 +11,40 @@ def scroll_area_wrapper(widget:QtWidgets.QWidget) -> QtWidgets.QScrollArea:
 
 
 # Dialog to confirm or cancel action.
-def Q_Confirmation_Dialog(window_title, text, informative_text="", warning=False, parent=None, *args, **kwargs):
-    dialog = QtWidgets.QMessageBox(parent=parent, *args, **kwargs)
-    if warning:
-        dialog.setIcon(QtWidgets.QMessageBox.Warning)
-    
-    dialog.setWindowTitle(window_title)
-    dialog.setText(text)
-    if informative_text:
-        dialog.setInformativeText(informative_text)
+class Q_Confirmation_Dialog(QtWidgets.QMessageBox):
+    def __init__(self, parent=None):
+        super(Q_Confirmation_Dialog, self).__init__(parent=parent) 
 
-    dialog.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
-    dialog.setDefaultButton(QtWidgets.QMessageBox.Cancel)
+        self.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
+        self.setDefaultButton(QtWidgets.QMessageBox.Cancel)
 
-    button_press = dialog.exec_()
-    if button_press == QtWidgets.QMessageBox.Ok:
-        return True
-    elif button_press == QtWidgets.QMessageBox.Cancel:
-        return False
-    else:
-        # This should never be reached.
-        raise Exception()
+    def get_ok(self, title, text, informative_text="", warning=False, ):
+        if warning:
+            self.setIcon(QtWidgets.QMessageBox.Warning)
+        
+        self.setWindowTitle(title)
+        self.setText(text)
+        if informative_text:
+            self.setInformativeText(informative_text)
+        
+        button_press = self.exec_()
+        if button_press == QtWidgets.QMessageBox.Ok:
+            return True
+        elif button_press == QtWidgets.QMessageBox.Cancel:
+            return False
+        else:
+            # This should never be reached.
+            raise Exception()
 
 
 # Dialogue to reorder a list of strings.
 class Q_Reorder_Dialogue(QtWidgets.QDialog):
     # Passing a string to add_new_button will allow for new items to be added to the list.
-    def __init__(self, input_list, window_title="Reorder list", add_new_button=None, allow_duplicates=True, 
-        parent=None, *args, **kwargs):
+    def __init__(self, parent=None):
+        super(Q_Reorder_Dialogue, self).__init__(parent=parent)
 
+    def get_order(self, input_list, window_title="Reorder list", add_new_button=None, allow_duplicates=True):
         self.allow_duplicates = allow_duplicates
-        
-        super(Q_Reorder_Dialogue, self).__init__(parent=parent, *args, **kwargs)
         
         self.setWindowTitle(window_title)
         
@@ -55,13 +57,13 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
             new_item_layout = QtWidgets.QHBoxLayout()
 
             self.new_item_input_field = QtWidgets.QLineEdit(parent=self)
-            self.new_item_input_field.textChanged.connect(self.on_text_changed)
+            self.new_item_input_field.textChanged.connect(self._on_text_changed)
             new_item_layout.addWidget(self.new_item_input_field)
             
             self.new_item_button = QtWidgets.QPushButton(parent=self)
             self.new_item_button.setText(add_new_button)
             self.new_item_button.setEnabled(False)
-            self.new_item_button.clicked.connect(self.append_item)
+            self.new_item_button.clicked.connect(self._append_item)
             
             new_item_layout.addWidget(self.new_item_button, alignment=QtCore.Qt.AlignRight)
 
@@ -75,15 +77,15 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
         
         self.setLayout(layout)
 
-        self.ok = self.exec_()
-        self.return_list = self.reorder_widget.get_items()
+        ok = self.exec_()
+        return self.reorder_widget.get_items(), ok
 
-    def append_item(self):
+    def _append_item(self):
         item = self.new_item_input_field.text()
         self.reorder_widget.append_item(item)
         self.new_item_input_field.clear()
 
-    def on_text_changed(self):
+    def _on_text_changed(self):
         if self.new_item_input_field.text() == "" or self.new_item_input_field.text().isspace():
             self.new_item_button.setEnabled(False)
         elif not self.allow_duplicates:
@@ -93,11 +95,6 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
                 self.new_item_button.setEnabled(True)
         else:
             self.new_item_button.setEnabled(True)
-
-    # Allows for unpacking of return_list and ok in single line.
-    def __iter__(self):
-        yield self.return_list 
-        yield self.ok
 
 
 # Widget with a rearangable list of strings.
