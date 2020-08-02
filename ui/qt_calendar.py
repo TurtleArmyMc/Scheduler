@@ -27,7 +27,7 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
         self.setGridVisible(True)
         self.setVerticalHeaderFormat(self.VerticalHeaderFormat.NoVerticalHeader)
 
-        todo_handler.todolist_update_event.connect(self.on_todolist_update)
+        todo_handler.update_event.connect(self.on_todolist_update)
 
     def paintCell(self, painter:QtGui.QPainter, rect:QtCore.QRect, date:QtCore.QDate):
         # Paint background
