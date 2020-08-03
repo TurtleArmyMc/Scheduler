@@ -18,7 +18,7 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
         unselected_weekend_date_text = QtGui.QColor(255, 0, 0)
         completed_todo_item = QtGui.QColor(0, 255, 0)
         uncompleted_todo_item = QtGui.QColor(255, 0, 0)
-    
+
     def __init__(self, *args, **kwargs):
         self.update_items_dict()
 
@@ -73,7 +73,7 @@ class Q_Todo_Calendar(QtWidgets.QCalendarWidget):
             for item in items:
                 if y  > rect.height():
                     break
-                
+
                 if item["completed"]:
                     painter.setPen(self.Color.completed_todo_item)
                 else:

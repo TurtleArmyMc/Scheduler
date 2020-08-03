@@ -13,7 +13,7 @@ def scroll_area_wrapper(widget:QtWidgets.QWidget) -> QtWidgets.QScrollArea:
 # Dialog to confirm or cancel action.
 class Q_Confirmation_Dialog(QtWidgets.QMessageBox):
     def __init__(self, parent=None):
-        super(Q_Confirmation_Dialog, self).__init__(parent=parent) 
+        super(Q_Confirmation_Dialog, self).__init__(parent=parent)
 
         self.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
         self.setDefaultButton(QtWidgets.QMessageBox.Cancel)
@@ -21,12 +21,12 @@ class Q_Confirmation_Dialog(QtWidgets.QMessageBox):
     def get_ok(self, title, text, informative_text="", warning=False, ):
         if warning:
             self.setIcon(QtWidgets.QMessageBox.Warning)
-        
+
         self.setWindowTitle(title)
         self.setText(text)
         if informative_text:
             self.setInformativeText(informative_text)
-        
+
         button_press = self.exec_()
         if button_press == QtWidgets.QMessageBox.Ok:
             return True
@@ -45,11 +45,11 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
 
     def get_order(self, input_list, window_title="Reorder list", add_new_button=None, allow_duplicates=True):
         self.allow_duplicates = allow_duplicates
-        
+
         self.setWindowTitle(window_title)
-        
+
         layout = QtWidgets.QVBoxLayout()
-        
+
         self.reorder_widget = Q_Reorder_Widget(input_list, parent=self)
         layout.addWidget(self.reorder_widget)
 
@@ -59,22 +59,22 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
             self.new_item_input_field = QtWidgets.QLineEdit(parent=self)
             self.new_item_input_field.textChanged.connect(self._on_text_changed)
             new_item_layout.addWidget(self.new_item_input_field)
-            
+
             self.new_item_button = QtWidgets.QPushButton(parent=self)
             self.new_item_button.setText(add_new_button)
             self.new_item_button.setEnabled(False)
             self.new_item_button.clicked.connect(self._append_item)
-            
+
             new_item_layout.addWidget(self.new_item_button, alignment=QtCore.Qt.AlignRight)
 
             layout.addLayout(new_item_layout)
-        
+
         buttons = QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
         self.buttonBox = QtWidgets.QDialogButtonBox(buttons, parent=self)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         layout.addWidget(self.buttonBox)
-        
+
         self.setLayout(layout)
 
         ok = self.exec_()
@@ -125,10 +125,10 @@ def date_string_to_qdate(string:str) -> QtCore.QDate:
         split_string = string.split("/")
         if len(split_string) == 3:
             month, day, year = split_string
-            month, day, year = int(month), int(day), int(year) 
+            month, day, year = int(month), int(day), int(year)
         elif len(split_string) == 2:
             month, day = split_string
-            month, day = int(month), int(day) 
+            month, day = int(month), int(day)
         else:
             return None
 

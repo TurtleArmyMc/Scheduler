@@ -18,7 +18,7 @@ class Q_Todo_Handler_Widget(QtWidgets.QSplitter):
 
         self.tree_widget = Q_Todo_Tree_Widget(self, todo_handler.todo_list)
         layout.addWidget(self.tree_widget)
-        
+
         new_item_button = QtWidgets.QPushButton("Add new todo item.", self)
         new_item_button.clicked.connect(lambda: self.tree_widget.new_tree_item())
         layout.addWidget(new_item_button)
@@ -47,7 +47,7 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.setColumnCount(2)
-        
+
         # Set last column (due_date column) to stretch only as large as it needs to be to fit its contents.
         header = self.header()
         header.setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
@@ -60,11 +60,11 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
 
         self.load_widgets_from_list(load_list)
         self.itemChanged.connect(self.on_item_changed)
-    
+
     def load_widgets_from_list(self, load_list, parent=None):
         if parent is None:
             parent = self
-        
+
         for item in load_list:
             tree_view_item = Q_Todo_Item(**item, parent=parent)
             if "items" in item:
@@ -121,7 +121,7 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
             delete_item_action = QtWidgets.QAction("Delete todo item", parent=self.context_menu)
             delete_item_action.triggered.connect(item.delete)
             self.context_menu.addAction(delete_item_action)
-        
+
         add_child_action = QtWidgets.QAction("Add todo item", parent=self.context_menu)
         if item is not None:
             add_child_action.triggered.connect(item.add_child_todo_item)
@@ -145,8 +145,8 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
 class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
     def __init__(self, name, completed=False, due_date=None, items=None, parent=None):
         super(Q_Todo_Item, self).__init__(parent)
-        
-        self.setFlags(Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | 
+
+        self.setFlags(Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled |
             Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled)
 
         self.setText(0, name)
@@ -191,7 +191,7 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
             ret["completed"] = True
         else:
             ret["completed"] = False
-        
+
         if self.text(1) != "" and not self.text(1).isspace():
             ret["due_date"] = self.text(1)
 
@@ -199,4 +199,3 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
             ret["items"] = [self.child(i).to_dict() for i in range(self.childCount())]
 
         return ret
-

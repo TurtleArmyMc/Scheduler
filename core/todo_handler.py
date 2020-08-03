@@ -14,7 +14,7 @@ class Todo_Handler(Data_Handler):
     def todo_list(self, value):
         self._data = value
 
-    # Returns an array of all todo items. 
+    # Returns an array of all todo items.
     def flat_item_list(self) -> [dict]:
         ret = []
         for item in self.todo_list:
