@@ -12,7 +12,7 @@ class Chain_Handler(Data_Handler):
             "chains": {},
             "chain_comments": {}
         }
-        super(Chain_Handler, self).__init__(json_path=chains_json_path, default_data=default_data)
+        super(Chain_Handler, self).__init__("Chains", json_path=chains_json_path, default_data=default_data)
 
     @property
     def chain_order(self):
@@ -42,11 +42,12 @@ class Chain_Handler(Data_Handler):
 
     def _chains_getitem(self, index):
         chain_name = index[0]
-        self._data["chains"][chain_name] # Raise error if chain_name not in chains.
+        self._data["chains"][chain_name] # Raise KeyError if chain_name not in chains.
         if len(index) == 4:
             year, month, day = h.format_date_ssi(*index[1:])
             try:
-                return self._data["chains"][chain_name][year][month][day-1]
+                day_index = day - 1
+                return self._data["chains"][chain_name][year][month][day_index]
             except (KeyError, IndexError):
                 return 0
         if len(index) == 3:

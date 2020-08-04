@@ -11,7 +11,8 @@ logging.basicConfig()
 
 
 class Data_Handler():
-    def __init__(self, json_path:str, backup_dir_path:str=None, default_data={}, logging_level:int=logging.WARN):
+    def __init__(self, name:str, json_path:str, backup_dir_path:str=None, default_data={},
+    logging_level:int=logging.WARN):
         self._json_path = Path(json_path)
         if backup_dir_path is None:
             self._backup_dir_path = self._json_path.parent / "backups"
@@ -20,8 +21,8 @@ class Data_Handler():
 
         self._default_data = default_data
         self.update_event = Event()
-        self._logger = logging.getLogger(__name__)
-        self._logger.setLevel(logging.INFO)
+        self._logger = logging.getLogger(name)
+        self._logger.setLevel(logging_level)
 
         self._load_json()
 
