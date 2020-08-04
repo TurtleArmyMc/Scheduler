@@ -99,6 +99,10 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
             if item.childCount() == 0 and item.checkState(0) == Qt.Checked:
                 item.delete()
 
+    def delete_selected_items(self):
+        for item in self.selectedItems():
+            item.delete()
+
     def dropEvent(self, event):
         # Save todo list when todo items are reordered.
         selected_items = self.selectedItems()
@@ -117,10 +121,16 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         self.context_menu.clear()
 
         item = self.itemAt(point)
+
         if item is not None:
             delete_item_action = QtWidgets.QAction("Delete todo item", parent=self.context_menu)
             delete_item_action.triggered.connect(item.delete)
             self.context_menu.addAction(delete_item_action)
+
+        if len(self.selectedItems()) > 1:
+            delete_selected_items_action = QtWidgets.QAction("Delete selected todo items", parent=self.context_menu)
+            delete_selected_items_action.triggered.connect(self.delete_selected_items)
+            self.context_menu.addAction(delete_selected_items_action)
 
         add_child_action = QtWidgets.QAction("Add todo item", parent=self.context_menu)
         if item is not None:
