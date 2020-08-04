@@ -168,15 +168,22 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
             if item.childCount() == 0 and item.checkState(0) == Qt.Checked:
                 item.delete()
 
-    def delete(self):
+    def delete(self, delete_children=False):
         tree_widget = self.treeWidget()
         parent = self.parent()
         # parent() returns None for top level widgets.
         if parent is not None:
+            if not delete_children:
+                index = parent.indexOfChild(self)
+                for i in range(self.childCount()):
+                    parent.insertChild(index + i, self.takeChild(0))
             parent.removeChild(self)
         else:
-            i = tree_widget.indexOfTopLevelItem(self)
-            tree_widget.takeTopLevelItem(i)
+            index = tree_widget.indexOfTopLevelItem(self)
+            if not delete_children:
+                for i in range(self.childCount()):
+                    tree_widget.insertTopLevelItem(index + i + 1, self.takeChild(0))
+            tree_widget.takeTopLevelItem(index)
         tree_widget.save_tree_to_json()
 
     def add_child_todo_item(self):
