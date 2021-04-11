@@ -19,20 +19,6 @@ class Event():
             func(*args, **kwargs)
 
 
-class Indexable_Property():
-    def __init__(self, getter, setter=None):
-        self._getter = getter
-        self._setter = setter
-
-    def __getitem__(self, index):
-        return self._getter(index)
-
-    def __setitem__(self, index, value):
-        if self._setter is not None:
-            return self._setter(index, value)
-        raise TypeError("Property is not subscriptable")
-
-
 def format_date_iii(year=None, month=None, day=None, date=None) -> (int, int, int):
     # Return year, month, and day as a tuple of integers.
     if (date is not None):

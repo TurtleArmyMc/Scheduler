@@ -51,7 +51,7 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
     def create_chain_labels(self):
         label_style_sheet = "font-weight: bold; font-size: 50px; margin-right: 5px"
         row = 0
-        for index, chain_name in enumerate(chain_handler.chain_order):
+        for index, chain_name in enumerate(chain_handler.get_chain_order()):
             column = index + 1
             label = QtWidgets.QLabel(parent=self)
             label.setText(chain_name)
@@ -83,21 +83,21 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
 
             self.chain_layout.addWidget(date_label, row, date_label_column)
 
-            for index, chain_name in enumerate(chain_handler.chain_order):
+            for index, chain_name in enumerate(chain_handler.get_chain_order()):
                 column = index + 1
                 chain_link = Q_Chain_Link_Checkbox(self, chain_name, date=date)
                 self.chain_layout.addWidget(chain_link, row, column)
             row += 1
 
     def edit_chain_order(self):
-        old_chain_order = chain_handler.chain_order
+        old_chain_order = chain_handler.get_chain_order()
         new_chain_order, ok = Q_Reorder_Dialogue(self).get_order(
             old_chain_order, "Edit chains", "Add chain", allow_duplicates=False)
         if ok:
             for chain_name in new_chain_order:
                 if chain_name not in old_chain_order:
                     chain_handler.create_new_chain(chain_name)
-            chain_handler.chain_order = new_chain_order
+            chain_handler.edit_chain_order(new_chain_order)
             self.load_chain_layout_ui()
 
 
@@ -121,7 +121,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     # Determine whether the checkbox should be checked or not.
     def init_checked_state(self, state):
         if state is None:
-            state = chain_handler.chains[self.chain_name, self.year, self.month, self.day]
+            state = chain_handler.get_chain(self.chain_name, self.year, self.month, self.day)
 
         if state == 1:
             self.setCheckState(QtCore.Qt.CheckState.Checked)
@@ -133,7 +133,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
     # Load the comment tooltip for the chain link.
     def load_comment(self, comment=None):
         if comment is None:
-            self.comment = chain_handler.chain_comments[self.chain_name, self.year, self.month, self.day]
+            self.comment = chain_handler.get_chain_comment(self.chain_name, self.year, self.month, self.day)
         else:
             self.comment = comment
 
@@ -214,7 +214,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
         comment, ok = QtWidgets.QInputDialog(self).getText(
             self, "Comment", "Set comment:", QtWidgets.QLineEdit.Normal, self.comment)
         if comment and ok:
-            chain_handler.chain_comments[self.chain_name, self.year, self.month, self.day] = comment
+            chain_handler.edit_chain_comment(self.chain_name, comment, self.year, self.month, self.day)
             self.load_comment(comment)
             self.load_context_menu()
 
@@ -228,7 +228,7 @@ class Q_Chain_Link_Checkbox(QtWidgets.QCheckBox):
         new_value = 0
         if self.checkState() == QtCore.Qt.CheckState.Checked:
             new_value = 1
-        chain_handler.chains[self.chain_name, self.year, self.month, self.day] = new_value
+        chain_handler.edit_chain(self.chain_name, new_value, self.year, self.month, self.day)
 
     # Opens custom context menu for editing the chain link's comment tooltip on right click.
     def on_context_menu(self, point):

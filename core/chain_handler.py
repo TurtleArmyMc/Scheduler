@@ -14,14 +14,12 @@ class Chain_Handler(Data_Handler):
         }
         super(Chain_Handler, self).__init__("Chains", json_path=chains_json_path, default_data=default_data)
 
-    @property
-    def chain_order(self):
+    def get_chain_order(self):
         return self._data["chain_order"].copy()
 
-    @chain_order.setter
-    def chain_order(self, new_order):
-        old_order = self.chain_order
-        old_order_sorted = self.chain_order
+    def edit_chain_order(self, new_order):
+        old_order = self.get_chain_order()
+        old_order_sorted = self.get_chain_order()
         old_order_sorted.sort()
         new_order_sorted = new_order.copy()
         new_order_sorted.sort()
@@ -32,44 +30,28 @@ class Chain_Handler(Data_Handler):
         else:
             raise SyntaxError("New chain order must contain the same names as the old order.")
 
-    @property
-    def chains(self):
-        return h.Indexable_Property(self._chains_getitem, self._chains_setitem)
+    # Try to check the value of the chain at the date. If it's not set, return 0.
+    def get_chain(self, chain, year=None, month=None, day=None, date=None):
+        year, month, day = h.format_date_ssi(year, month, day, date)
 
-    @property
-    def chain_comments(self):
-        return h.Indexable_Property(self._chain_comments_getitem, self._chain_comments_setitem)
+        try:
+            return self._data["chains"][chain][year][month][day-1]
+        except (KeyError, IndexError):
+            return 0
 
-    def _chains_getitem(self, index):
-        chain_name = index[0]
-        self._data["chains"][chain_name] # Raise KeyError if chain_name not in chains.
-        if len(index) == 4:
-            year, month, day = h.format_date_ssi(*index[1:])
-            try:
-                day_index = day - 1
-                return self._data["chains"][chain_name][year][month][day_index]
-            except (KeyError, IndexError):
-                return 0
-        if len(index) == 3:
-            year, month = str(index[1]), str(index[2])
-            try:
-                return self._data["chains"][chain_name][year][month].copy()
-            except KeyError:
-                days = h.days_in_month(year, month)
-                return [0] * days
-        raise IndexError
+    # Return a list of all the chain links for a month. If it's not present in the json, return an empty list.
+    def get_chain_month(self, chain_name, year, month):
+        year = str(year)
+        month = str(month)
 
-    def _chains_setitem(self, index:tuple, new_value:bool):
-        if not (isinstance(new_value, bool) or new_value in [0, 1]):
-            raise ValueError
+        try:
+            return self._data["chains"][chain_name][year][month].copy()
+        except KeyError:
+            days = h.days_in_month(year, month)
+            return [0] * days
 
-        chain_name, year, month, day = index[0], None, None, None
-        if len(index) == 4:
-            year, month, day = h.format_date_ssi(*index[1:])
-        elif len(index) == 2:
-            year, month, day = h.format_date_ssi(date=index[1])
-        else:
-            raise IndexError
+    def edit_chain(self, chain_name, new_value: int, year=None, month=None, day=None, date=None):
+        year, month, day = h.format_date_ssi(year, month, day, date)
 
         # If missing dictionary keys for year and/or month, add them.
         if (year not in self._data["chains"][chain_name]):
@@ -85,34 +67,26 @@ class Chain_Handler(Data_Handler):
         self._delete_chain_if_empty(chain_name, year, month)
         self.save_json()
 
-    def _chain_comments_getitem(self, index):
-        chain_name, year, month, day = index[0], None, None, None
-        if len(index) == 4:
-            year, month, day = h.format_date_sss(*index[1:])
-        elif len(index) == 2:
-            year, month, day = h.format_date_sss(date=index[1])
-        else:
-            raise IndexError
+    # Return the comment for a chain at a date. If it's not present in the json, return None.
+    def get_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
+        year, month, day = h.format_date_sss(year, month, day, date)
+        # Unlike _chains, _chains_comments uses strings for days because [chain_name][year][month] contains a dictionary
+        # instead of a list.
 
         try:
             return self._data["chain_comments"][chain_name][year][month][day]
         except KeyError:
             return None
 
-    def _chain_comments_setitem(self, index:tuple, new_comment:str):
-        chain_name, year, month, day = index[0], None, None, None
-        # Unlike _data["chains"], _data["chains_comments"] uses strings for days because [chain_name][year][month]
-        # contains a dictionary instead of a list.
-        if len(index) == 4:
-            year, month, day = h.format_date_sss(*index[1:])
-        elif len(index) == 2:
-            year, month, day = h.format_date_sss(date=index[1])
-        else:
-            raise IndexError
-
+    # Edit the comment for a chain at a date.
+    def edit_chain_comment(self, chain_name, new_comment, year=None, month=None, day=None, date=None):
         if new_comment == "" or new_comment.isspace():
             self.delete_chain_comment(self, chain_name, year, month, day)
         else:
+            year, month, day = h.format_date_ssi(year, month, day, date)
+            # Unlike _chains, _chains_comments uses strings for days because [chain_name][year][month] contains a
+            # dictionary instead of a list.
+            day = str(day)
 
             if (chain_name not in self._data["chain_comments"]):
                 self._data["chain_comments"][chain_name] = {}
@@ -120,7 +94,7 @@ class Chain_Handler(Data_Handler):
                 self._data["chain_comments"][chain_name][year] = {}
             if (month not in self._data["chain_comments"][chain_name][year]):
                 self._data["chain_comments"][chain_name][year][month] = {}
-            old_comment = self.chain_comments[chain_name, year, month, day]
+            old_comment = self.get_chain_comment(chain_name, year, month, day)
             self._data["chain_comments"][chain_name][year][month][day] = new_comment
             self._logger.info(
                 f"Changed chain '{chain_name}' comment at {year}/{month}/{day} from '{old_comment}' to '{new_comment}'.")
@@ -173,7 +147,7 @@ class Chain_Handler(Data_Handler):
         # contains a dictionary instead of a list.
 
         try:
-            old_comment = self.chain_comments[chain_name, year, month, day]
+            old_comment = self.get_chain_comment(chain_name, year, month, day)
             del self._data["chain_comments"][chain_name][year][month][day]
             self._logger.info(f"Deleted chain '{chain_name}' comment '{old_comment}' at {year}/{month}/{day}.")
             self._delete_chain_comment_dictionaries_if_empty(chain_name, year, month)
