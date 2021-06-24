@@ -29,7 +29,7 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         super(System_Tray_Icon, self).__init__()
 
         self.app = app
-        self.parent = parent # Dummy widget to prevent garbage collection from destroying context menu.
+        self.parent = parent  # Dummy widget to prevent garbage collection from destroying context menu.
 
         self.init_icon()
         self.init_context_menu()
@@ -42,7 +42,9 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         self.setIcon(QIcon("resources/Clock.ico"))
 
     def init_context_menu(self):
-        self.context_menu = QtWidgets.QMenu(parent=self.parent) # Requires parent to not be destroyed right away.
+        self.context_menu = QtWidgets.QMenu(
+            parent=self.parent
+        )  # Requires parent to not be destroyed right away.
 
         show_main_window_action = QtWidgets.QAction("Main window", parent=self)
         show_main_window_action.triggered.connect(self.open_main_window)
@@ -62,7 +64,10 @@ class System_Tray_Icon(QtWidgets.QSystemTrayIcon):
         self.app.quit()
 
     def on_activated(self, reason):
-        if reason == self.ActivationReason.Trigger or reason == self.ActivationReason.MiddleClick: # Exlude right click.
+        if (
+            reason == self.ActivationReason.Trigger
+            or reason == self.ActivationReason.MiddleClick
+        ):  # Exlude right click.
             self.open_main_window()
 
 

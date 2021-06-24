@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt
 from core.todo_handler import todo_handler
 import core.helpers as h
 
-from ui.qt_calendar import Q_Todo_Calendar
+from ui.qt_todo_calendar import Q_Todo_Calendar
 
 
 # Widget to load and display todo items.
@@ -123,12 +123,16 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
         item = self.itemAt(point)
 
         if item is not None:
-            delete_item_action = QtWidgets.QAction("Delete todo item", parent=self.context_menu)
+            delete_item_action = QtWidgets.QAction(
+                "Delete todo item", parent=self.context_menu
+            )
             delete_item_action.triggered.connect(item.delete)
             self.context_menu.addAction(delete_item_action)
 
         if len(self.selectedItems()) > 1:
-            delete_selected_items_action = QtWidgets.QAction("Delete selected todo items", parent=self.context_menu)
+            delete_selected_items_action = QtWidgets.QAction(
+                "Delete selected todo items", parent=self.context_menu
+            )
             delete_selected_items_action.triggered.connect(self.delete_selected_items)
             self.context_menu.addAction(delete_selected_items_action)
 
@@ -139,7 +143,9 @@ class Q_Todo_Tree_Widget(QtWidgets.QTreeWidget):
             add_child_action.triggered.connect(lambda: self.new_tree_item())
         self.context_menu.addAction(add_child_action)
 
-        clear_checked_items_action = QtWidgets.QAction("Clear completed items", parent=self.context_menu)
+        clear_checked_items_action = QtWidgets.QAction(
+            "Clear completed items", parent=self.context_menu
+        )
         clear_checked_items_action.triggered.connect(self.clear_checked_items)
         self.context_menu.addAction(clear_checked_items_action)
 
@@ -156,8 +162,14 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
     def __init__(self, name, completed=False, due_date=None, items=None, parent=None):
         super(Q_Todo_Item, self).__init__(parent)
 
-        self.setFlags(Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled |
-            Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled)
+        self.setFlags(
+            Qt.ItemIsEditable
+            | Qt.ItemIsSelectable
+            | Qt.ItemIsUserCheckable
+            | Qt.ItemIsEnabled
+            | Qt.ItemIsDragEnabled
+            | Qt.ItemIsDropEnabled
+        )
 
         self.setText(0, name)
         if due_date is not None:
@@ -200,9 +212,7 @@ class Q_Todo_Item(QtWidgets.QTreeWidgetItem):
         self.treeWidget().new_tree_item(self)
 
     def to_dict(self):
-        ret = {
-            "name": self.text(0)
-        }
+        ret = {"name": self.text(0)}
 
         if self.checkState(0) == Qt.CheckState.Checked:
             ret["completed"] = True

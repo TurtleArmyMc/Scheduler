@@ -10,9 +10,15 @@ from core.helpers import Event
 logging.basicConfig()
 
 
-class Data_Handler():
-    def __init__(self, name:str, json_path:str, backup_dir_path:str=None, default_data={},
-    logging_level:int=logging.WARN):
+class Data_Handler:
+    def __init__(
+        self,
+        name: str,
+        json_path: str,
+        backup_dir_path: str = None,
+        default_data={},
+        logging_level: int = logging.WARN,
+    ):
         self._json_path = Path(json_path)
         if backup_dir_path is None:
             self._backup_dir_path = self._json_path.parent / "backups"
@@ -33,8 +39,8 @@ class Data_Handler():
         try:
             if path is None:
                 path = self._json_path
-            if (path.is_file()):
-                with open(path, 'r') as file:
+            if path.is_file():
+                with open(path, "r") as file:
                     self._data = json.loads(file.read())
                     self._logger.info(f"Loaded data from '{path}'.")
             else:
@@ -43,7 +49,6 @@ class Data_Handler():
         except Exception as e:
             self._logger.error(f"Error loading data from {path}", exc_info=e)
             raise e
-
 
     def save_json(self, path=None):
         if path is None:
@@ -54,7 +59,7 @@ class Data_Handler():
                 path.touch(exist_ok=True)
                 self._logger.info(f"Created path '{path}'.")
 
-            with open(path, 'w') as file:
+            with open(path, "w") as file:
                 serialized_json = json.dumps(self._data, indent=1)
                 file.write(serialized_json)
                 self._logger.info(f"Saved data to '{path}'.")
@@ -65,6 +70,11 @@ class Data_Handler():
 
     def _backup_json(self, path=None):
         if path is None:
-            now = datetime.now().replace(tzinfo=None, microsecond=0).isoformat().replace(":", ".")
+            now = (
+                datetime.now()
+                .replace(tzinfo=None, microsecond=0)
+                .isoformat()
+                .replace(":", ".")
+            )
             path = self._backup_dir_path / f"{now}_{self._json_path.name}"
         self.save_json(path)

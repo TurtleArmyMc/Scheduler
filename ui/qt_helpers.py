@@ -3,10 +3,12 @@ from PySide2 import QtCore, QtGui
 import datetime
 
 
-def scroll_area_wrapper(widget:QtWidgets.QWidget) -> QtWidgets.QScrollArea:
+def scroll_area_wrapper(widget: QtWidgets.QWidget) -> QtWidgets.QScrollArea:
     widget_scroll_area = QtWidgets.QScrollArea()
     widget_scroll_area.setWidget(widget)
-    widget_scroll_area.setWidgetResizable(True) # Allows widget to expand and scroll in the scroll area.
+    widget_scroll_area.setWidgetResizable(
+        True
+    )  # Allows widget to expand and scroll in the scroll area.
     return widget_scroll_area
 
 
@@ -18,7 +20,13 @@ class Q_Confirmation_Dialog(QtWidgets.QMessageBox):
         self.setStandardButtons(QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Ok)
         self.setDefaultButton(QtWidgets.QMessageBox.Cancel)
 
-    def get_ok(self, title, text, informative_text="", warning=False, ):
+    def get_ok(
+        self,
+        title,
+        text,
+        informative_text="",
+        warning=False,
+    ):
         if warning:
             self.setIcon(QtWidgets.QMessageBox.Warning)
 
@@ -43,7 +51,13 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(Q_Reorder_Dialogue, self).__init__(parent=parent)
 
-    def get_order(self, input_list, window_title="Reorder list", add_new_button=None, allow_duplicates=True):
+    def get_order(
+        self,
+        input_list,
+        window_title="Reorder list",
+        add_new_button=None,
+        allow_duplicates=True,
+    ):
         self.allow_duplicates = allow_duplicates
 
         self.setWindowTitle(window_title)
@@ -65,7 +79,9 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
             self.new_item_button.setEnabled(False)
             self.new_item_button.clicked.connect(self._append_item)
 
-            new_item_layout.addWidget(self.new_item_button, alignment=QtCore.Qt.AlignRight)
+            new_item_layout.addWidget(
+                self.new_item_button, alignment=QtCore.Qt.AlignRight
+            )
 
             layout.addLayout(new_item_layout)
 
@@ -86,7 +102,10 @@ class Q_Reorder_Dialogue(QtWidgets.QDialog):
         self.new_item_input_field.clear()
 
     def _on_text_changed(self):
-        if self.new_item_input_field.text() == "" or self.new_item_input_field.text().isspace():
+        if (
+            self.new_item_input_field.text() == ""
+            or self.new_item_input_field.text().isspace()
+        ):
             self.new_item_button.setEnabled(False)
         elif not self.allow_duplicates:
             if self.new_item_input_field.text() in self.reorder_widget.get_items():
@@ -116,7 +135,7 @@ class Q_Reorder_Widget(QtWidgets.QListWidget):
         return [self.item(i).text() for i in range(self.count())]
 
 
-def date_string_to_qdate(string:str) -> QtCore.QDate:
+def date_string_to_qdate(string: str) -> QtCore.QDate:
     # Assumes mm/dd/yy date format
     try:
         _date = datetime.date.today()
@@ -140,6 +159,6 @@ def date_string_to_qdate(string:str) -> QtCore.QDate:
         return None
 
 
-def qdate_is_weekend(qdate:QtCore.QDate) -> bool:
+def qdate_is_weekend(qdate: QtCore.QDate) -> bool:
     day_of_week = qdate.dayOfWeek()
     return day_of_week == 6 or day_of_week == 7

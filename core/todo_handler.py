@@ -4,7 +4,9 @@ from core.data_handler import Data_Handler
 # Handles the to-do list.
 class Todo_Handler(Data_Handler):
     def __init__(self, todo_json_path="data/todo.json"):
-        super(Todo_Handler, self).__init__("Todo", json_path=todo_json_path, default_data=[])
+        super(Todo_Handler, self).__init__(
+            "Todo", json_path=todo_json_path, default_data=[]
+        )
 
     @property
     def todo_list(self):
