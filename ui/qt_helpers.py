@@ -162,3 +162,11 @@ def date_string_to_qdate(string: str) -> QtCore.QDate:
 def qdate_is_weekend(qdate: QtCore.QDate) -> bool:
     day_of_week = qdate.dayOfWeek()
     return day_of_week == 6 or day_of_week == 7
+
+
+def date_to_qdate(date: datetime.date) -> QtCore.QDate:
+    return QtCore.QDate(date.year, date.month, date.day)
+
+
+def qdate_to_date(qdate: QtCore.QDate) -> datetime.date:
+    return datetime.date(qdate.year(), qdate.month(), qdate.day())

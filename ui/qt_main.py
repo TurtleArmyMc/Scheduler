@@ -19,7 +19,7 @@ class Main_Window(QtWidgets.QMainWindow):
         self.tabs.setStyleSheet(tabs_style_sheet)
 
         self.tabs.addTab(Q_Todo_Handler_Widget(), "Todo List")
-        self.tabs.addTab(scroll_area_wrapper(Q_Chain_Handler_Widget()), "Chains")
+        self.tabs.addTab(Q_Chain_Handler_Widget(), "Chains")
 
         self.setCentralWidget(self.tabs)
 

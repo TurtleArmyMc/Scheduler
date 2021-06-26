@@ -14,7 +14,7 @@ class Q_Todo_Handler_Widget(QtWidgets.QSplitter):
 
         todo_tree_wrapper = QtWidgets.QWidget(self)
         todo_tree_wrapper.save_tree_to_json = self.save_tree_to_json
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QtWidgets.QVBoxLayout(todo_tree_wrapper)
 
         self.tree_widget = Q_Todo_Tree_Widget(self, todo_handler.todo_list)
         layout.addWidget(self.tree_widget)

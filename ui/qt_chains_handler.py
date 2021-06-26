@@ -2,15 +2,34 @@ from PySide2 import QtWidgets, QtCore
 import datetime
 
 from core.chain_handler import chain_handler
+from ui.qt_chains_calendar import Q_Todo_Month_View
 
-from ui.qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue
+from ui.qt_helpers import Q_Confirmation_Dialog, Q_Reorder_Dialogue, scroll_area_wrapper
 import core.helpers as h
 
-
-# Widget to load and display all chains.
+# Wrapper widget that contains a chain viewer and editor, as well as a month
+# view for chains.
 class Q_Chain_Handler_Widget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(Q_Chain_Handler_Widget, self).__init__(*args, **kwargs)
+        self.init_widget_ui()
+
+    def init_widget_ui(self):
+        self.tabs = QtWidgets.QTabWidget()
+        tabs_style_sheet = "QTabWidget { font-size: 23px; }"
+        self.tabs.setStyleSheet(tabs_style_sheet)
+
+        self.tabs.addTab(scroll_area_wrapper(Q_Chain_Editor_Widget()), "Vertical")
+        self.tabs.addTab(Q_Todo_Month_View(self), "Month")
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.tabs)
+
+
+# Widget to load and display all chains.
+class Q_Chain_Editor_Widget(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(Q_Chain_Editor_Widget, self).__init__(*args, **kwargs)
         self.init_widget_ui()
 
     def init_widget_ui(self):
@@ -36,7 +55,7 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         self.create_chain_labels()
 
         # Load chains links for next 2 weeks.
-        self.date_iterator = h.date_iterator(
+        self.date_iterator = h.Date_Iterator(
             datetime.timedelta(days=-1), date=datetime.date.today()
         )
         self.load_chains(14)
@@ -80,9 +99,7 @@ class Q_Chain_Handler_Widget(QtWidgets.QWidget):
         row = self.chain_layout.rowCount()
         date_label_column = 0
 
-        for _ in range(days):
-            date = next(self.date_iterator)
-
+        for date in self.date_iterator.get_dates(days):
             weekday = h.get_weekday(date=date)
             date_label = QtWidgets.QLabel(parent=self)
             date_label.setStyleSheet(date_label_style_sheet)

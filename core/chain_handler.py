@@ -11,6 +11,8 @@ class Chain_Handler(Data_Handler):
         super(Chain_Handler, self).__init__(
             "Chains", json_path=chains_json_path, default_data=default_data
         )
+        self.update_chain_val_event = h.Event()
+        self.update_chain_order_event = h.Event()
 
     def get_chain_order(self):
         return self._data["chain_order"].copy()
@@ -25,6 +27,7 @@ class Chain_Handler(Data_Handler):
             self._data["chain_order"] = new_order.copy()
             self._logger.info(f"Reordered chains from to {old_order} to {new_order}.")
             self.save_json()
+            self.update_chain_order_event.call()
         else:
             raise SyntaxError(
                 "New chain order must contain the same names as the old order."
@@ -70,6 +73,7 @@ class Chain_Handler(Data_Handler):
         )
         self._delete_chain_if_empty(chain_name, year, month)
         self.save_json()
+        self.update_chain_val_event.call()
 
     # Return the comment for a chain at a date. If it's not present in the json, return None.
     def get_chain_comment(self, chain_name, year=None, month=None, day=None, date=None):
@@ -112,6 +116,7 @@ class Chain_Handler(Data_Handler):
         self._data["chain_order"].append(chain_name)
         self._logger.info(f"Created new chain '{chain_name}'.")
         self.save_json()
+        self.update_chain_order_event.call()
 
     def rename_chain(self, current_name, new_name):
         if new_name in self._data["chains"]:
@@ -131,6 +136,7 @@ class Chain_Handler(Data_Handler):
             self._logger.info(f"Renamed chain '{current_name}' to '{new_name}'.")
 
             self.save_json()
+            self.update_chain_order_event.call()
 
     # Removes chain link lists that are all 0 and any empty year/month dictionaries.
     def _delete_chain_if_empty(self, chain_name, year, month):
@@ -146,6 +152,7 @@ class Chain_Handler(Data_Handler):
             self._data["chain_comments"].pop(chain_name, None)
             self._logger.info(f"Deleted chain '{chain_name}'.")
             self.save_json()
+            self.update_chain_order_event.call()
         else:
             raise NameError(f"No chain '{chain_name}'")
 

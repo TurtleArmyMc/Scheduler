@@ -3,7 +3,8 @@ from calendar import monthrange
 
 
 class Event:
-    _connected_functions = []
+    def __init__(self):
+        self._connected_functions = []
 
     def connect(self, func):
         # Can be used as a decorator or called on already existing functions.
@@ -65,10 +66,14 @@ def get_weekday(year=None, month=None, day=None, date=None) -> str:
     return datetime.date(year, month, day).strftime("%a")
 
 
-def date_iterator(
-    timedelta: datetime.timedelta, year=None, month=None, day=None, date=None
-):
-    date = datetime.date(*format_date_iii(year, month, day, date))
-    while True:
-        yield date
-        date += timedelta
+class Date_Iterator:
+    def __init__(
+        self, timedelta: datetime.timedelta, year=None, month=None, day=None, date=None
+    ):
+        self.date = datetime.date(*format_date_iii(year, month, day, date))
+        self.timedelta = timedelta
+
+    def get_dates(self, i: int):
+        for _ in range(i):
+            yield self.date
+            self.date += self.timedelta
