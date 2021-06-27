@@ -24,7 +24,6 @@ class Q_Todo_Month_View(QtWidgets.QSplitter):
 
     def on_chain_selection_update(self):
         self.chains_calendar.on_chain_selection_update()
-        self.chains_calendar.generate_week_info()
         self.chains_calendar.updateCells()
 
     def get_chains(self):
@@ -76,17 +75,17 @@ class Q_Chains_Calendar(QtWidgets.QCalendarWidget):
         chain_name_color = QtGui.QColor(255, 255, 255)
 
     chain_colors = [
-        QtGui.QColor(220,20,60),  # Crimson
+        QtGui.QColor(220, 20, 60),  # Crimson
         QtGui.QColor(0, 128, 0),  # Green
-        QtGui.QColor(0,0,139),  # Dark blue
-        QtGui.QColor(218,165,32),  # Goldenrod
-        QtGui.QColor(138,43,226),  # Blue violet
-        QtGui.QColor(154,205,50),  # Yellow green
-        QtGui.QColor(255,99,71),  # Tomato
-        QtGui.QColor(238,130,238),  # Violet
-        QtGui.QColor(32,178,170),  # Light sea green
-        QtGui.QColor(106,90,205),  # Slate blue
-        QtGui.QColor(255,105,180),  # Hot pink
+        QtGui.QColor(0, 0, 139),  # Dark blue
+        QtGui.QColor(218, 165, 32),  # Goldenrod
+        QtGui.QColor(138, 43, 226),  # Blue violet
+        QtGui.QColor(154, 205, 50),  # Yellow green
+        QtGui.QColor(255, 99, 71),  # Tomato
+        QtGui.QColor(238, 130, 238),  # Violet
+        QtGui.QColor(32, 178, 170),  # Light sea green
+        QtGui.QColor(106, 90, 205),  # Slate blue
+        QtGui.QColor(255, 105, 180),  # Hot pink
     ]
 
     def __init__(self, parent: Q_Todo_Month_View, *args, **kwargs):
@@ -104,56 +103,44 @@ class Q_Chains_Calendar(QtWidgets.QCalendarWidget):
         self.setSelectedDate(QtCore.QDate(1, 1, 1))
         self.setCurrentPage(today.year, today.month)
 
-        self.generate_week_info()
-        self.currentPageChanged.connect(self.generate_week_info)
-        chain_handler.update_chain_val_event.connect(self.generate_week_info)
+        self.month_chains = {}
+        self.set_chain_colors()
+        self.currentPageChanged.connect(self.on_chain_selection_update)
+        chain_handler.update_chain_val_event.connect(self.on_chain_selection_update)
 
     def on_chain_selection_update(self):
-        self.generate_week_info()
+        self.month_chains = {}
+        self.set_chain_colors()
         self.updateCells()
 
-    def generate_week_info(self):
-        chains = self.parent().get_chains()
-
+    def set_chain_colors(self):
         self.chain_color_dict = {
             chain_name: self.chain_colors[index % len(self.chain_colors)]
-            for index, chain_name in enumerate(chains)
+            for index, chain_name in enumerate(chain_handler.get_chain_order())
         }
 
-        self.week_chains = {}
+    def generate_week_info(self, date: datetime.date):
+        chains = self.parent().get_chains()
 
-        # Set first_day_of_week to the earliest displayed date in the calendar
-        first_day_of_week = datetime.date(self.yearShown(), self.monthShown(), 1)
-        while first_day_of_week.isoweekday() != self.firstDayOfWeek():
-            first_day_of_week -= datetime.timedelta(days=1)
+        # Set date to the first day of the week displayed in the calendar
+        while date.isoweekday() != self.firstDayOfWeek():
+            date -= datetime.timedelta(days=1)
+
+        date_range = (date, date + datetime.timedelta(days=6))
 
         # Get all of the chains for every week.
-        last_day_of_week = first_day_of_week + datetime.timedelta(days=6)
-        self.week_chains[
-            (first_day_of_week, last_day_of_week)
-        ] = self.get_chains_for_week(first_day_of_week, chains)
-        first_day_of_week = last_day_of_week + datetime.timedelta(days=1)
-        # The first day of the first week displayed by the calendar may be in
-        # the previous month, so the dates for that week must be gotten
-        # outside of the while loop.
-        while first_day_of_week.month == self.monthShown():
-            last_day_of_week = first_day_of_week + datetime.timedelta(days=6)
-            self.week_chains[
-                (first_day_of_week, last_day_of_week)
-            ] = self.get_chains_for_week(first_day_of_week, chains)
-            first_day_of_week = last_day_of_week + datetime.timedelta(days=1)
-
-    def get_chains_for_week(self, check_date, chains):
-        return [
+        week_chains = [
             chain_name
             for chain_name in chains
             if any(
                 chain_handler.get_chain(
-                    chain_name, date=check_date + datetime.timedelta(days=day_offset)
+                    chain_name, date=date + datetime.timedelta(days=day_offset)
                 )
                 for day_offset in range(7)
             )
         ]
+        self.month_chains[date_range] = week_chains
+        return week_chains
 
     def paintCell(
         self, painter: QtGui.QPainter, rect: QtCore.QRect, qdate: QtCore.QDate
@@ -168,12 +155,12 @@ class Q_Chains_Calendar(QtWidgets.QCalendarWidget):
         painter.drawText(rect, QtCore.Qt.AlignTop, str(qdate.day()))
 
         # Get all of the chains for the current week
-        for date_range, chains in self.week_chains.items():
+        for date_range, chains in self.month_chains.items():
             if date_range[0] <= date and date <= date_range[1]:
                 display_chains = chains
                 break
         else:
-            return  # Should never be reached
+            display_chains = self.generate_week_info(qdate_to_date(qdate))
 
         # Paint completed chains
         completed_chains_num = 0
