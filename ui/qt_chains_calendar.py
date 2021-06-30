@@ -116,7 +116,7 @@ class Q_Chains_Calendar(QtWidgets.QCalendarWidget):
     def set_chain_colors(self):
         self.chain_color_dict = {
             chain_name: self.chain_colors[index % len(self.chain_colors)]
-            for index, chain_name in enumerate(chain_handler.get_chain_order())
+            for index, chain_name in enumerate(self.parent().get_chains())
         }
 
     def generate_week_info(self, date: datetime.date):
